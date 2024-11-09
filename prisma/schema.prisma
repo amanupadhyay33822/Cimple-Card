@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+   id                 Int               @id @default(autoincrement())
+  email              String   @unique
+  password           String
+  name               String
+  profilePictureUrl  String?  // Optional profile picture
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+
+  cards              Card[]
+  // referrals          Referral[]
+  socialMediaLinks   SocialMediaLink[] 
+  // Additional fields
+  role               Role @default(User )
+}
+model Card {
+  id                 Int      @id @default(autoincrement())
+  title              String   // Card title (e.g., user's name or custom title)
+  bio                String?  // User's bio or short introduction
+  phoneNumber        String?
+  email              String?
+  jobTitle           String?
+  companyName        String?
+  profileImageUrl    String?  // Optional profile image URL
+  socialMediaLinks   SocialMediaLink[]     // Store social media links as JSON (e.g., { "linkedin": "url", "twitter": "url" })
+  templateType       String   // Identifier for the template type
+  uniqueUrl          String   @unique // Unique URL for sharing the card
+  qrCodeUrl          String?  // URL for QR code
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id])
+  userId             Int
+}
+model SocialMediaLink {
+  id                 Int               @id @default(autoincrement())
+  platform           SocialMediaPlatform // Enum for platform type (e.g., LinkedIn, Twitter)
+  url                String
+  userId             Int?              // Link can belong to a user
+  cardId             Int?              // Link can belong to a specific card
+
+  // Relations
+  user               User?             @relation(fields: [userId], references: [id])
+  card               Card?             @relation(fields: [cardId], references: [id])
+}
+model Company {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  logoUrl            String?
+  websiteUrl         String?    // Optional industry categorization
+  createdAt          DateTime          @default(now())
+}
+enum SocialMediaPlatform {
+  LINKEDIN
+  TWITTER
+  FACEBOOK
+  INSTAGRAM
+  YOUTUBE
+  OTHER
+}
+enum Role {
+  User
+  Admin
+}

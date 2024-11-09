@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"outDir": "./dist",
+		"rootDir": "./src", // Specifies the root directory of input files.
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true
+	},
+	"ts-node": {
+		"esm": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "**/*.spec.ts", "frontend"]
+}
