@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import UserRoutes from "./routes/userRoutes.js";
 import cors from "cors";
+import cardRoutes from './routes/cardRoute.js';
+import appointmentRoutes from "./routes/appointmentRoute.js";
 const app = express();
 app.use(cookieParser()); // for parsing cookies
 app.use(express.json());
@@ -13,6 +15,8 @@ app.use(cors({
     credentials: true,
 }));
 app.use("/api/user", UserRoutes);
+app.use("/api/card", cardRoutes);
+app.use("/api/appointment", appointmentRoutes);
 app.listen(PORT, () => {
     console.log(`server is running on ${PORT}`);
 });

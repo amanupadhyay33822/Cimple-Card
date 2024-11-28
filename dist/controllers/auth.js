@@ -2,16 +2,25 @@ import prisma from "../DB/dbconfig.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { sendOtpEmail } from "../utils/mailSender.js";
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
-export const register = async (req, res) => {
+const isValidEmail = (email) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+};
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+export const sendOTP = async (req, res) => {
     try {
-        const { email, username, password } = req.body;
+        const { email } = req.body;
         // Check if the required fields are provided
-        if (!email || !password) {
+        if (!email) {
             return res
                 .status(400)
-                .json({ message: "Email and password are required" });
+                .json({ message: "Email required" });
+        }
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
         }
         // Check if user with the given email already exists
         const existingUser = await prisma.user.findUnique({
@@ -20,6 +29,45 @@ export const register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: "Email is already in use" });
         }
+        const otp = generateOTP();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+        await prisma.oTP.create({
+            data: {
+                email,
+                otp,
+                expiresAt,
+            },
+        });
+        await sendOtpEmail(email, otp);
+        return res.status(200).json({ message: "OTP sent to email. Please verify." });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+export const verifyOTP = async (req, res) => {
+    try {
+        const { email, otp, username, password } = req.body;
+        // Check if required fields are provided
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+        // Find OTP in the database
+        const storedOTP = await prisma.oTP.findFirst({
+            where: {
+                email,
+                otp,
+                expiresAt: { gte: new Date() }, // Ensure the OTP is not expired
+            },
+        });
+        if (!storedOTP) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+        // Delete the OTP after verification
+        await prisma.oTP.delete({
+            where: { id: storedOTP.id },
+        });
         // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10);
         // Create the new user in the database
@@ -30,7 +78,6 @@ export const register = async (req, res) => {
                 password: hashedPassword,
             },
         });
-        // Return success response
         return res.status(201).json({
             message: "User registered successfully",
             user: {
@@ -41,7 +88,7 @@ export const register = async (req, res) => {
         });
     }
     catch (error) {
-        console.error(error);
+        console.error("Error during OTP verification:", error);
         return res.status(500).json({ message: error.message });
     }
 };
@@ -68,7 +115,7 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid email or password" });
         }
         // Generate a JWT token
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" } // Set token expiration
+        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "1h" } // Set token expiration
         );
         // Set the token in a cookie
         res.cookie("token", token, {
@@ -127,10 +174,17 @@ export const editPartner = async (req, res) => {
                 role,
             },
         });
-        return res.status(200).json({ message: "Partner updated successfully", partner: updatedPartner });
+        return res
+            .status(200)
+            .json({
+            message: "Partner updated successfully",
+            partner: updatedPartner,
+        });
     }
     catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Server error while updating partner" });
+        return res
+            .status(500)
+            .json({ message: "Server error while updating partner" });
     }
 };

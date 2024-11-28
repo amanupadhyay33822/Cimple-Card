@@ -3,20 +3,33 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
+import { sendOtpEmail } from "../utils/mailSender.js";
 dotenv.config();
 const JWT_SECRET: any = process.env.JWT_SECRET;
 
-export const register: any = async (req: Request, res: Response) => {
+const isValidEmail = (email: string) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
+};
+
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+
+export const sendOTP: any = async (req: Request, res: Response) => {
   try {
-    const { email, username, password } = req.body;
+    const { email } = req.body;
 
     // Check if the required fields are provided
-    if (!email || !password) {
+    if (!email ) {
       return res
         .status(400)
-        .json({ message: "Email and password are required" });
+        .json({ message: "Email required" });
     }
 
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
     // Check if user with the given email already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -25,6 +38,51 @@ export const register: any = async (req: Request, res: Response) => {
     if (existingUser) {
       return res.status(400).json({ message: "Email is already in use" });
     }
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+    await prisma.oTP.create({
+      data: {
+        email,
+        otp,
+        expiresAt,
+      },
+    });
+
+    await sendOtpEmail(email, otp);
+    
+    return res.status(200).json({ message: "OTP sent to email. Please verify." });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const verifyOTP:any = async (req: Request, res: Response) => {
+  try {
+    const { email, otp, username, password } = req.body;
+
+    // Check if required fields are provided
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Find OTP in the database
+    const storedOTP = await prisma.oTP.findFirst({
+      where: {
+        email,
+        otp,
+        expiresAt: { gte: new Date() }, // Ensure the OTP is not expired
+      },
+    });
+
+    if (!storedOTP) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Delete the OTP after verification
+    await prisma.oTP.delete({
+      where: { id: storedOTP.id },
+    });
 
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -38,7 +96,6 @@ export const register: any = async (req: Request, res: Response) => {
       },
     });
 
-    // Return success response
     return res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -48,10 +105,11 @@ export const register: any = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error(error);
+    console.error("Error during OTP verification:", error);
     return res.status(500).json({ message: error.message });
   }
 };
+
 // // Login route
 export const login: any = async (req: Request, res: Response) => {
   try {
@@ -82,7 +140,7 @@ export const login: any = async (req: Request, res: Response) => {
 
     // Generate a JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: "1h" } // Set token expiration
     );
@@ -109,7 +167,7 @@ export const login: any = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-export const logout:any = (req: Request, res: Response) => {
+export const logout: any = (req: Request, res: Response) => {
   try {
     // Clear the JWT token cookie by setting it to an empty value and an immediate expiration time
     res.cookie("token", "", {
@@ -126,7 +184,7 @@ export const logout:any = (req: Request, res: Response) => {
     return res.status(500).json({ message: "Server error during logout" });
   }
 };
-export const editPartner:any = async (req: Request, res: Response) => {
+export const editPartner: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params; // Get the partner ID from route parameters
     const { email, username, designation, role } = req.body;
@@ -147,9 +205,16 @@ export const editPartner:any = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({ message: "Partner updated successfully", partner: updatedPartner });
+    return res
+      .status(200)
+      .json({
+        message: "Partner updated successfully",
+        partner: updatedPartner,
+      });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Server error while updating partner" });
+    return res
+      .status(500)
+      .json({ message: "Server error while updating partner" });
   }
 };

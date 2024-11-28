@@ -8,57 +8,108 @@ datasource db {
 }
 
 model User {
-   id                 Int               @id @default(autoincrement())
-  email              String   @unique
-  password           String
-  name               String
-  profilePictureUrl  String?  // Optional profile picture
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  password          String
+  username          String
+  resetToken                String?   @unique // Token for password reset or email verification
+  resetPasswordExpires DateTime? // Expiration time for the reset token
+  profilePictureUrl String? // Optional profile picture
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  role              Role     @default(User)
 
-
-  cards              Card[]
-  // referrals          Referral[]
-  socialMediaLinks   SocialMediaLink[] 
-  // Additional fields
-  role               Role @default(User )
+  cards       Card[]
+  Appointment Appointment[]
 }
+
 model Card {
-  id                 Int      @id @default(autoincrement())
-  title              String   // Card title (e.g., user's name or custom title)
-  bio                String?  // User's bio or short introduction
-  phoneNumber        String?
-  email              String?
-  jobTitle           String?
-  companyName        String?
-  profileImageUrl    String?  // Optional profile image URL
-  socialMediaLinks   SocialMediaLink[]     // Store social media links as JSON (e.g., { "linkedin": "url", "twitter": "url" })
-  templateType       String   // Identifier for the template type
-  uniqueUrl          String   @unique // Unique URL for sharing the card
-  qrCodeUrl          String?  // URL for QR code
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id])
-  userId             Int
-}
-model SocialMediaLink {
-  id                 Int               @id @default(autoincrement())
-  platform           SocialMediaPlatform // Enum for platform type (e.g., LinkedIn, Twitter)
-  url                String
-  userId             Int?              // Link can belong to a user
-  cardId             Int?              // Link can belong to a specific card
+  id                       Int       @id @default(autoincrement())
+  title                    String // Card title (e.g., user's name or custom title)
+  bio                      String? // Short introduction or bio
+  phoneNumbers             String[] // Array of phone numbers
+  emails                   String[] // Array of email addresses
+  addresses                String[] // Array of addresses
+  jobTitle                 String? // User's job title
+  companyName              String? // User's company name
+  dateOfBirth              DateTime? // Optional date of birth
+  personalSocialMediaLinks Json // Array of social media links
+  companySocialMediaLink   String? // Company's social media link
+  profileImageUrl          String? // Optional profile image URL
+  templateType             String // Identifier for the template type
+  uniqueUrl                String    @unique // Unique URL for sharing the card
+  qrCodeUrl                String? // URL for QR code
+  aboutUs                  String? // About Us section
+  instagramVideoLink       String? // Instagram video link
+  youtubeVideoLink         String? // YouTube video link
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
-  // Relations
-  user               User?             @relation(fields: [userId], references: [id])
-  card               Card?             @relation(fields: [cardId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  userId          Int
+  services        Service[] // Array of services provided
+  testimonials    Testimonial[] // Array of testimonials
+  SocialMediaLink SocialMediaLink[] // Social media links for the card
 }
+model OTP {
+  id        Int      @id @default(autoincrement()) // Auto-incrementing ID field
+  email     String   // The email field
+  otp       String   // The OTP field
+  createdAt DateTime @default(now()) // Timestamp when the OTP is created
+  expiresAt DateTime @default(now()) @updatedAt // Expiration time for OTP (handled manually)
+
+  @@index([email]) // Optional: To index the email field for faster queries
+}
+
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  email       String
+  message     String
+  createdAt   DateTime @default(now())
+
+  userId Int // Reference to the user who created the appointment
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Service {
+  id         Int     @id @default(autoincrement())
+  name       String // Name of the service
+  imageUrl   String? // URL for the service image
+  serviceUrl String? // URL for the service
+  cardId     Int // Reference to the associated card
+  card       Card    @relation(fields: [cardId], references: [id])
+}
+
+model Testimonial {
+  id          Int     @id @default(autoincrement())
+  authorName  String // Name of the person giving the testimonial
+  content     String // Testimonial content
+  imageUrl    String? // Optional image URL of the author
+  designation String? // Author's designation
+  cardId      Int // Reference to the associated card
+  card        Card    @relation(fields: [cardId], references: [id])
+}
+
+model SocialMediaLink {
+  id       Int                 @id @default(autoincrement())
+  platform SocialMediaPlatform // Enum for platform type (e.g., LinkedIn, Twitter)
+  iconUrl  String? // Optional icon URL for the platform
+  url      String // URL of the social media
+  cardId   Int? // Reference to the associated card
+  card     Card?               @relation(fields: [cardId], references: [id])
+}
+
 model Company {
-  id                 Int               @id @default(autoincrement())
-  name               String
-  logoUrl            String?
-  websiteUrl         String?    // Optional industry categorization
-  createdAt          DateTime          @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String // Company name
+  logoUrl    String? // URL of the company logo
+  websiteUrl String? // Website URL of the company
+  createdAt  DateTime @default(now())
 }
+
 enum SocialMediaPlatform {
   LINKEDIN
   TWITTER
@@ -67,6 +118,7 @@ enum SocialMediaPlatform {
   YOUTUBE
   OTHER
 }
+
 enum Role {
   User
   Admin
