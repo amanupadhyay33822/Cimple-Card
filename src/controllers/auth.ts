@@ -184,37 +184,32 @@ export const logout: any = (req: Request, res: Response) => {
     return res.status(500).json({ message: "Server error during logout" });
   }
 };
-export const editPartner: any = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params; // Get the partner ID from route parameters
-    const { email, username, designation, role } = req.body;
+// Adjust the import path to your Prisma instance
 
-    // Validate input
-    if (!email && !username && !designation && !role) {
-      return res.status(400).json({ message: "No fields to update" });
+export const getUserDetails: any = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id; // Extract the logged-in user's ID
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    // Update partner details
-    const updatedPartner = await prisma.user.update({
-      where: { id: parseInt(id) },
-      data: {
-        email,
-        username,
-        designation,
-        role,
+    // Fetch user details along with their cards
+    const userDetails = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        cards: true, // Include the cards related to the user
       },
     });
 
-    return res
-      .status(200)
-      .json({
-        message: "Partner updated successfully",
-        partner: updatedPartner,
-      });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Server error while updating partner" });
+    if (!userDetails) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user: userDetails });
+  } catch (error: any) {
+    console.error("Error fetching user details with cards:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
+

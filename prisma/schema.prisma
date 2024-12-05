@@ -8,20 +8,25 @@ datasource db {
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
-  password          String
-  username          String
-  resetToken                String?   @unique // Token for password reset or email verification
+  id                   Int       @id @default(autoincrement())
+  email                String    @unique
+  password             String
+  username             String
+  resetToken           String?   @unique // Token for password reset or email verification
   resetPasswordExpires DateTime? // Expiration time for the reset token
-  profilePictureUrl String? // Optional profile picture
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  role              Role     @default(User)
+  profilePictureUrl    String?   // Optional profile picture
+  designation          String?   // User's designation or job title
+  contactNumber        String?   // Contact number
+  availability         Json?     // Availability date and time (stored as JSON for flexibility)
+  bio                  String?   // User's bio or brief introduction
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  role                 Role      @default(User)
 
   cards       Card[]
   Appointment Appointment[]
 }
+
 
 model Card {
   id                       Int       @id @default(autoincrement())
