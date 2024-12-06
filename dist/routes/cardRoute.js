@@ -1,14 +1,15 @@
-import express from 'express';
-import { createCard, getAllCards, getCardById, updateCard, deleteCard } from '../controllers/card.js';
+import express from "express";
+import { createCard, getAllCards, getCardById, updateCard, deleteCard, } from "../controllers/card.js";
+import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 // Create a new card
-router.post('/create', createCard);
+router.post("/create", verifyToken, createCard);
 // Get all cards
-router.get('/get', getAllCards);
+router.get("/get", verifyToken, getAllCards);
 // Get a specific card by ID
-router.get('/get/:id', getCardById);
+router.get("/get/:id", verifyToken, getCardById);
 // Update a card by ID
-router.put('/update/:id', updateCard);
+router.put("/update/:id", verifyToken, updateCard);
 // Delete a card by ID
-router.delete('/del/:id', deleteCard);
+router.delete("/del/:id", verifyToken, deleteCard);
 export default router;

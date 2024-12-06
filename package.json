@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/node": "^22.7.7",
     "@types/nodemailer": "^6.4.17",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
@@ -36,6 +37,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
+    "node": "^20.18.1",
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.7"
   }
