@@ -31,15 +31,15 @@ model User {
 model Card {
   id                       Int       @id @default(autoincrement())
   title                    String // Card title (e.g., user's name or custom title)
-  bio                      String? // Short introduction or bio
+  // bio                      String? // Short introduction or bio
   phoneNumbers             String[] // Array of phone numbers
   emails                   String[] // Array of email addresses
   addresses                String[] // Array of addresses
   jobTitle                 String? // User's job title
   companyName              String? // User's company name
   dateOfBirth              DateTime? // Optional date of birth
-  personalSocialMediaLinks Json // Array of social media links
-  companySocialMediaLink   String? // Company's social media link
+  personalSocialMediaLinks Json // Array of social media links (list of object ,iconurl and link)
+  companySocialMediaLink   String? // Company's social media link (list of object ,iconurl and link)
   profileImageUrl          String? // Optional profile image URL
   templateType             String // Identifier for the template type
   uniqueUrl                String    @unique // Unique URL for sharing the card
@@ -49,7 +49,7 @@ model Card {
   youtubeVideoLink         String? // YouTube video link
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
-
+//contact number
   user            User              @relation(fields: [userId], references: [id])
   userId          Int
   services        Service[] // Array of services provided

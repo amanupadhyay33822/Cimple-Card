@@ -1,9 +1,10 @@
 import express from 'express'
 
-import { getUserDetails, login, logout,sendOTP, verifyOTP } from '../controllers/auth.js';
+import { getUserDetails, login, logout,sendOTP, updateUserDetails, verifyOTP } from '../controllers/auth.js';
 import { resetPassword, resetPasswordToken } from '../controllers/resetPassword.js';
 import { verifyToken } from '../middleware/auth.js';
 import limiter from '../middleware/ratelimit.js';
+
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.post('/verify-otp', verifyOTP);
 
 router.post("/send-token",limiter,resetPasswordToken)
 router.post("/updatePassword",resetPassword)
+router.put("/update",verifyToken,updateUserDetails)
 
 export default router;

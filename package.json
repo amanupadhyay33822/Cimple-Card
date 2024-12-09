@@ -28,6 +28,7 @@
     "@types/concurrently": "^7.0.0",
     "@types/cookie-parser": "^1.4.7",
     "@types/dotenv": "^8.2.0",
+    "@types/express-rate-limit": "^6.0.2",
     "@types/jsonwebtoken": "^9.0.7",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

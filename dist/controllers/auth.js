@@ -180,3 +180,40 @@ export const getUserDetails = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+export const updateUserDetails = async (req, res) => {
+    const userId = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
+    const { email, username, profilePictureUrl, designation, contactNumber, availability, bio, role, } = req.body;
+    try {
+        // Validate the presence of the user ID
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized: User ID not found." });
+        }
+        // Update user details in the database
+        const updatedUser = await prisma.user.update({
+            where: { id: parseInt(userId) },
+            data: {
+                email,
+                username,
+                profilePictureUrl,
+                designation,
+                contactNumber,
+                availability,
+                bio,
+                role,
+                updatedAt: new Date(), // Automatically set the updated time
+            },
+        });
+        res.status(200).json({
+            message: "User details updated successfully.",
+            user: updatedUser,
+        });
+    }
+    catch (error) {
+        console.error("Error updating user details:", error);
+        if (error.code === "P2025") {
+            // Prisma error code for record not found
+            return res.status(404).json({ error: "User not found." });
+        }
+        res.status(500).json({ error: "An error occurred while updating user details." });
+    }
+};
