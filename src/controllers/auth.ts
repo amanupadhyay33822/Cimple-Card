@@ -150,10 +150,9 @@ export const login: any = async (req: Request, res: Response) => {
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
     
-       sameSite: 'none',
       
-      // Use 'secure' in production to send cookie only over HTTPS
-      // Allows the cookie to be sent with cross-origin requests
+      
+   
     });
 
     // Return success response
@@ -162,6 +161,7 @@ export const login: any = async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
+        token:token,
         username: user.username,
       },
     });
