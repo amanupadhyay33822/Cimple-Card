@@ -10,9 +10,9 @@ export const verifyToken: any = async (
   next: NextFunction
 ) => {
   try {
-    console.log(req)
-    console.log(req.cookies.token)
-    console.log(req.headers.authorization)
+    console.log(req.cookies)
+    // console.log(req.cookies.token)
+    // console.log(req.headers.authorization)
     // Extracting the token from various sources
     const token =req.body.token||
       req.cookies.token ||   req.headers.authorization;
