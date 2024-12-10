@@ -13,11 +13,12 @@ app.use(express.json())
 dotenv.config({})
 const PORT = process.env.PORT || 3000;
 app.use(
-	cors({
-		origin: "*",
-		credentials: true,
-	})
+  cors({
+    origin: ["http://localhost:3000"], // Add allowed origins
+    credentials: true, // If using cookies
+  })
 );
+
 app.use("/api/user", UserRoutes);
 app.use("/api/card", cardRoutes);
 app.use("/api/appointment", appointmentRoutes);
