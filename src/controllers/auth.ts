@@ -149,7 +149,10 @@ export const login: any = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Use 'secure' in production to send cookie only over HTTPS
+    
+       sameSite: 'none',
+      
+      // Use 'secure' in production to send cookie only over HTTPS
       // Allows the cookie to be sent with cross-origin requests
     });
 
