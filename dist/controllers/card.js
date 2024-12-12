@@ -1,62 +1,79 @@
 import prisma from "../DB/dbconfig.js";
 import { randomBytes } from 'crypto';
 // Create a new card
+// Adjust path as per your project structure
+import { v2 as cloudinary } from "cloudinary";
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+});
 export const createCard = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { title, bio, phoneNumbers, emails, addresses, jobTitle, companyName, dateOfBirth, personalSocialMediaLinks, companySocialMediaLink, profileImageUrl, templateType, uniqueUrl, qrCodeUrl, aboutUs, instagramVideoLink, youtubeVideoLink, services, testimonials, SocialMediaLink, } = req.body;
-        // Make sure personalSocialMediaLinks and SocialMediaLink have the expected structure
-        const formattedPersonalSocialMediaLinks = personalSocialMediaLinks?.map((link) => ({
-            platform: link.platform,
-            url: link.url,
-            iconUrl: link.iconUrl,
-        }));
-        const formattedSocialMediaLink = SocialMediaLink?.map((link) => ({
-            platform: link.platform,
-            url: link.url,
-            iconUrl: link.iconUrl,
-        }));
-        const customId = randomBytes(16).toString('hex');
+        const { title, companyName, companyAddress, jobTitle, bio, languageSpoken, dateOfBirth, phoneNumber, phoneNumbers, otherPhoneNumber, emails, otherEmails, emergencyName, emergencyRelationship, emergencyNumber, emergencyEmail, companySocialMediaLink, instagramLink, githubLink, additionalLink, productDesc, testimonialName, testimonialRole, testimonialIndustry, testimonialMessage, businesshoursFrom, businesshoursTo, businessType, templateType, aboutUs, qrCodeUrl, instagramVideoLink, youtubeVideoLink, services, SocialMediaLink, } = req.body;
+        // Upload profile image to Cloudinary if provided
+        let profileImageUrl = null;
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "profile_images",
+            });
+            profileImageUrl = result.secure_url;
+        }
+        const customId = randomBytes(16).toString("hex");
         const url = `http://localhost:3000/medical/${customId}`;
         const newCard = await prisma.card.create({
             data: {
                 title,
-                bio,
-                phoneNumbers,
-                emails,
-                addresses,
-                jobTitle,
-                companyName,
-                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-                personalSocialMediaLinks: {
-                    create: formattedPersonalSocialMediaLinks,
-                },
-                companySocialMediaLink,
+                companyName: companyName || null,
+                companyAddress: companyAddress || null,
+                jobTitle: jobTitle || null,
+                bio: bio || null,
+                languageSpoken: languageSpoken || null,
+                dateOfBirth: dateOfBirth || null,
+                phoneNumber: phoneNumber || null,
+                phoneNumbers: phoneNumbers || null,
+                otherPhoneNumber: otherPhoneNumber || null,
+                emails: emails || null,
+                otherEmails: otherEmails || null,
+                emergencyName: emergencyName || null,
+                emergencyRelationship: emergencyRelationship || null,
+                emergencyNumber: emergencyNumber || null,
+                emergencyEmail: emergencyEmail || null,
+                companySocialMediaLink: companySocialMediaLink || null,
+                instagramLink: instagramLink || null,
+                githubLink: githubLink || null,
+                additionalLink: additionalLink || null,
+                productDesc: productDesc || null,
+                testimonialName: testimonialName || null,
+                testimonialRole: testimonialRole || null,
+                testimonialIndustry: testimonialIndustry || null,
+                testimonialMessage: testimonialMessage || null,
+                businesshoursFrom: businesshoursFrom || null,
+                businesshoursTo: businesshoursTo || null,
+                businessType: businessType || null,
                 profileImageUrl,
                 templateType,
                 uniqueUrl: url,
-                qrCodeUrl,
-                aboutUs,
-                instagramVideoLink,
-                youtubeVideoLink,
+                qrCodeUrl: qrCodeUrl || null,
+                aboutUs: aboutUs || null,
+                instagramVideoLink: instagramVideoLink || null,
+                youtubeVideoLink: youtubeVideoLink || null,
+                userId,
                 services: {
                     create: services?.map((service) => ({
                         name: service.name,
                         imageUrl: service.imageUrl,
                         serviceUrl: service.serviceUrl,
-                    })),
-                },
-                testimonials: {
-                    create: testimonials?.map((testimonial) => ({
-                        authorName: testimonial.authorName,
-                        content: testimonial.content,
-                        designation: testimonial.designation,
-                    })),
+                    })) || [],
                 },
                 SocialMediaLink: {
-                    create: formattedSocialMediaLink,
+                    create: SocialMediaLink?.map((link) => ({
+                        platform: link.platform,
+                        url: link.url,
+                        iconUrl: link.iconUrl,
+                    })) || [],
                 },
-                userId,
             },
         });
         res.status(201).json({ success: true, card: newCard });

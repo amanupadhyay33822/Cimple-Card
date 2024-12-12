@@ -3,9 +3,15 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { v2 as cloudinary } from "cloudinary";
 import { sendOtpEmail } from "../utils/mailSender.js";
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME, // Your Cloudinary cloud name
+    api_key: process.env.API_KEY, // Your Cloudinary API key
+    api_secret: process.env.API_SECRET, // Your Cloudinary API secret
+});
 const isValidEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
@@ -16,9 +22,7 @@ export const sendOTP = async (req, res) => {
         const { email } = req.body;
         // Check if the required fields are provided
         if (!email) {
-            return res
-                .status(400)
-                .json({ message: "Email required" });
+            return res.status(400).json({ message: "Email required" });
         }
         if (!isValidEmail(email)) {
             return res.status(400).json({ message: "Invalid email format" });
@@ -40,7 +44,9 @@ export const sendOTP = async (req, res) => {
             },
         });
         await sendOtpEmail(email, otp);
-        return res.status(200).json({ message: "OTP sent to email. Please verify." });
+        return res
+            .status(200)
+            .json({ message: "OTP sent to email. Please verify." });
     }
     catch (error) {
         console.error(error);
@@ -132,7 +138,6 @@ export const login = async (req, res) => {
                 id: user.id,
                 token: token,
                 email: user.email,
-                token: token,
                 username: user.username,
             },
         });
@@ -174,7 +179,9 @@ export const getUserDetails = async (req, res) => {
             },
         });
         if (!userDetails) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "User not found" });
         }
         res.status(200).json({ success: true, user: userDetails });
     }
@@ -183,13 +190,31 @@ export const getUserDetails = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+// Adjust the import based on your setup
 export const updateUserDetails = async (req, res) => {
     const userId = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
-    const { email, username, profilePictureUrl, designation, contactNumber, availability, bio, role, } = req.body;
+    const { email, username, designation, contactNumber, availability, bio, role, } = req.body;
     try {
         // Validate the presence of the user ID
         if (!userId) {
-            return res.status(401).json({ error: "Unauthorized: User ID not found." });
+            return res
+                .status(401)
+                .json({ error: "Unauthorized: User ID not found." });
+        }
+        let profileImageUrl = undefined;
+        // Handle image upload to Cloudinary
+        if (req.file) {
+            try {
+                const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                    folder: "user_profiles",
+                    resource_type: "auto",
+                });
+                profileImageUrl = uploadResult.secure_url;
+            }
+            catch (uploadError) {
+                console.error("Error uploading image to Cloudinary:", uploadError);
+                return res.status(500).json({ error: "Failed to upload profile image." });
+            }
         }
         // Update user details in the database
         const updatedUser = await prisma.user.update({
@@ -197,7 +222,7 @@ export const updateUserDetails = async (req, res) => {
             data: {
                 email,
                 username,
-                profilePictureUrl,
+                profilePictureUrl: profileImageUrl, // Save the Cloudinary URL
                 designation,
                 contactNumber,
                 availability,
@@ -217,6 +242,8 @@ export const updateUserDetails = async (req, res) => {
             // Prisma error code for record not found
             return res.status(404).json({ error: "User not found." });
         }
-        res.status(500).json({ error: "An error occurred while updating user details." });
+        res
+            .status(500)
+            .json({ error: "An error occurred while updating user details." });
     }
 };

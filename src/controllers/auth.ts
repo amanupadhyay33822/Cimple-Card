@@ -5,27 +5,30 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import { v2 as cloudinary } from "cloudinary";
 import { sendOtpEmail } from "../utils/mailSender.js";
 dotenv.config();
 const JWT_SECRET: any = process.env.JWT_SECRET;
-
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME, // Your Cloudinary cloud name
+  api_key: process.env.API_KEY,       // Your Cloudinary API key
+  api_secret: process.env.API_SECRET, // Your Cloudinary API secret
+});
 const isValidEmail = (email: string) => {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
 };
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
-
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
 export const sendOTP: any = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
     // Check if the required fields are provided
-    if (!email ) {
-      return res
-        .status(400)
-        .json({ message: "Email required" });
+    if (!email) {
+      return res.status(400).json({ message: "Email required" });
     }
 
     if (!isValidEmail(email)) {
@@ -50,15 +53,17 @@ export const sendOTP: any = async (req: Request, res: Response) => {
     });
 
     await sendOtpEmail(email, otp);
-    
-    return res.status(200).json({ message: "OTP sent to email. Please verify." });
+
+    return res
+      .status(200)
+      .json({ message: "OTP sent to email. Please verify." });
   } catch (error: any) {
     console.error(error);
     return res.status(500).json({ message: error.message });
   }
 };
 
-export const verifyOTP:any = async (req: Request, res: Response) => {
+export const verifyOTP: any = async (req: Request, res: Response) => {
   try {
     const { email, otp, username, password } = req.body;
 
@@ -151,14 +156,6 @@ export const login: any = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-<<<<<<< HEAD
-     
-=======
-    
-      
-      
-   
->>>>>>> db91f6a671af8af05143c1e6427e01357f22d13a
     });
 
     // Return success response
@@ -168,7 +165,7 @@ export const login: any = async (req: Request, res: Response) => {
         id: user.id,
         token: token,
         email: user.email,
-        token:token,
+
         username: user.username,
       },
     });
@@ -213,7 +210,9 @@ export const getUserDetails: any = async (req: Request, res: Response) => {
     });
 
     if (!userDetails) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     res.status(200).json({ success: true, user: userDetails });
@@ -223,13 +222,15 @@ export const getUserDetails: any = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUserDetails:any = async (req: Request, res: Response) => {
-  const userId:string = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
+
+ // Adjust the import based on your setup
+
+export const updateUserDetails: any = async (req: Request, res: Response) => {
+  const userId: string = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
 
   const {
     email,
     username,
-    profilePictureUrl,
     designation,
     contactNumber,
     availability,
@@ -240,7 +241,25 @@ export const updateUserDetails:any = async (req: Request, res: Response) => {
   try {
     // Validate the presence of the user ID
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized: User ID not found." });
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: User ID not found." });
+    }
+
+    let profileImageUrl: string | undefined = undefined;
+
+    // Handle image upload to Cloudinary
+    if (req.file) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: "user_profiles",
+          resource_type: "auto",
+        });
+        profileImageUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error("Error uploading image to Cloudinary:", uploadError);
+        return res.status(500).json({ error: "Failed to upload profile image." });
+      }
     }
 
     // Update user details in the database
@@ -249,7 +268,7 @@ export const updateUserDetails:any = async (req: Request, res: Response) => {
       data: {
         email,
         username,
-        profilePictureUrl,
+        profilePictureUrl: profileImageUrl, // Save the Cloudinary URL
         designation,
         contactNumber,
         availability,
@@ -271,6 +290,8 @@ export const updateUserDetails:any = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    res.status(500).json({ error: "An error occurred while updating user details." });
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating user details." });
   }
 };

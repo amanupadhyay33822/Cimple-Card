@@ -1,11 +1,11 @@
 import express from 'express'
-
+import multer from "multer";
 import { getUserDetails, login, logout,sendOTP, updateUserDetails, verifyOTP } from '../controllers/auth.js';
 import { resetPassword, resetPasswordToken } from '../controllers/resetPassword.js';
 import { verifyToken } from '../middleware/auth.js';
 import limiter from '../middleware/ratelimit.js';
 
-
+const upload = multer({ dest: "uploads/" });
 const router = express.Router();
 
 // router.post("/signup", register);
@@ -17,6 +17,6 @@ router.post('/verify-otp', verifyOTP);
 
 router.post("/send-token",limiter,resetPasswordToken)
 router.post("/updatePassword",resetPassword)
-router.put("/update",verifyToken,updateUserDetails)
+router.put("/update",verifyToken,upload.single("image"),updateUserDetails)
 
 export default router;

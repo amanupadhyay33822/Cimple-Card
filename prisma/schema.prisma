@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
- id                   String    @id @default(uuid())
+  id                   String    @id @default(uuid())
   email                String    @unique
   password             String
   username             String
@@ -27,34 +27,92 @@ model User {
   Appointment Appointment[]
 }
 
-
 model Card {
   id                       Int       @id @default(autoincrement())
-  title                    String // Card title (e.g., user's name or custom title)
-  // bio                      String? // Short introduction or bio
-  phoneNumbers             String[] // Array of phone numbers
-  emails                   String[] // Array of email addresses
-  addresses                String[] // Array of addresses
-  jobTitle                 String? // User's job title
-  companyName              String? // User's company name
-  dateOfBirth              DateTime? // Optional date of birth
-  personalSocialMediaLinks Json // Array of social media links (list of object ,iconurl and link)
-  companySocialMediaLink   String? // Company's social media link (list of object ,iconurl and link)
-  profileImageUrl          String? // Optional profile image URL
-  templateType             String // Identifier for the template type
+  title                    String    // Card title (e.g., user's name or custom title)
+  companyName              String?   // Name of the user's company
+  companyAddress           String? // List of company addresses
+  jobTitle                 String?   // User's job title
+  bio                      String?   // Short introduction or bio
+  languageSpoken           String? // Languages spoken by the user
+  dateOfBirth              String? // Optional date of birth
+  phoneNumber              String?   // Primary phone number
+  phoneNumbers             String? // Array of additional phone numbers
+  otherPhoneNumber         String?   // Secondary phone number
+  emails                   String?  // Array of email addresses
+  otherEmails              String? // Array of additional emails
+  emergencyName            String?   // Emergency contact's name
+  emergencyRelationship    String?   // Emergency contact's relationship to the user
+  emergencyNumber          String?   // Emergency contact's phone number
+  emergencyEmail           String?   // Emergency contact's email address
   uniqueUrl                String    @unique // Unique URL for sharing the card
-  qrCodeUrl                String? // URL for QR code
-  aboutUs                  String? // About Us section
-  instagramVideoLink       String? // Instagram video link
-  youtubeVideoLink         String? // YouTube video link
+  companySocialMediaLink   String? // Array of company social media links
+  instagramLink            String?   // Instagram link
+  // personalSocialMediaLinks Json      // Array of personal social media links
+  githubLink               String?   // GitHub link
+  additionalLink           String?   // Additional custom link
+  productDesc              String?   // Description of a product or service
+  // testimonials             Testimonial[] // Array of testimonials
+  testimonialName          String? // List of testimonial author names
+  testimonialRole          String? // List of roles for testimonial authors
+  testimonialIndustry      String? // Industries associated with testimonials
+  testimonialMessage       String? // Testimonial messages
+  businesshoursFrom        String? // Business hours start time
+  businesshoursTo          String? // Business hours end time
+  businessType             String?   // Type of business
+  profileImageUrl          String?   // Optional profile image URL
+  templateType             String    // Identifier for the template type
+  qrCodeUrl                String?   // URL for QR code
+  aboutUs                  String?   // About Us section
+  instagramVideoLink       String?   // Instagram video link
+  youtubeVideoLink         String?   // YouTube video link
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
-//contact number
+
   user            User              @relation(fields: [userId], references: [id])
   userId          String
-  services        Service[] // Array of services provided
-  testimonials    Testimonial[] // Array of testimonials
+  services        Service[]         // Array of services provided
   SocialMediaLink SocialMediaLink[] // Social media links for the card
+}
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  email       String
+  message     String
+  createdAt   DateTime @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Service {
+  id         Int     @id @default(autoincrement())
+  name       String  // Name of the service
+  imageUrl   String? // URL for the service image
+  serviceUrl String? // URL for the service
+  cardId     Int     // Reference to the associated card
+  card       Card    @relation(fields: [cardId], references: [id])
+}
+
+// model Testimonial {
+//   id          Int     @id @default(autoincrement())
+//   authorName  String  // Name of the person giving the testimonial
+//   content     String  // Testimonial content
+//   imageUrl    String? // Optional image URL of the author
+//   designation String? // Author's designation
+//   cardId      Int     // Reference to the associated card
+//   card        Card    @relation(fields: [cardId], references: [id])
+// }
+
+model SocialMediaLink {
+  id       Int                 @id @default(autoincrement())
+  platform SocialMediaPlatform // Enum for platform type (e.g., LinkedIn, Twitter)
+  iconUrl  String?             // Optional icon URL for the platform
+  url      String              // URL of the social media
+  cardId   Int?                // Reference to the associated card
+  card     Card?               @relation(fields: [cardId], references: [id])
 }
 model OTP {
   id        Int      @id @default(autoincrement()) // Auto-incrementing ID field
@@ -65,56 +123,6 @@ model OTP {
 
   @@index([email]) // Optional: To index the email field for faster queries
 }
-
-
-model Appointment {
-  id          Int      @id @default(autoincrement())
-  name        String
-  phoneNumber String
-  email       String
-  message     String
-  createdAt   DateTime @default(now())
-
-  userId String // Reference to the user who created the appointment
-  user   User @relation(fields: [userId], references: [id])
-}
-
-model Service {
-  id         Int     @id @default(autoincrement())
-  name       String // Name of the service
-  imageUrl   String? // URL for the service image
-  serviceUrl String? // URL for the service
-  cardId     Int // Reference to the associated card
-  card       Card    @relation(fields: [cardId], references: [id])
-}
-
-model Testimonial {
-  id          Int     @id @default(autoincrement())
-  authorName  String // Name of the person giving the testimonial
-  content     String // Testimonial content
-  imageUrl    String? // Optional image URL of the author
-  designation String? // Author's designation
-  cardId      Int // Reference to the associated card
-  card        Card    @relation(fields: [cardId], references: [id])
-}
-
-model SocialMediaLink {
-  id       Int                 @id @default(autoincrement())
-  platform SocialMediaPlatform // Enum for platform type (e.g., LinkedIn, Twitter)
-  iconUrl  String? // Optional icon URL for the platform
-  url      String // URL of the social media
-  cardId   Int? // Reference to the associated card
-  card     Card?               @relation(fields: [cardId], references: [id])
-}
-
-model Company {
-  id         Int      @id @default(autoincrement())
-  name       String // Company name
-  logoUrl    String? // URL of the company logo
-  websiteUrl String? // Website URL of the company
-  createdAt  DateTime @default(now())
-}
-
 enum SocialMediaPlatform {
   LINKEDIN
   TWITTER
@@ -123,7 +131,13 @@ enum SocialMediaPlatform {
   YOUTUBE
   OTHER
 }
-
+model Company {
+  id         Int      @id @default(autoincrement())
+  name       String // Company name
+  logoUrl    String? // URL of the company logo
+  websiteUrl String? // Website URL of the company
+  createdAt  DateTime @default(now())
+}
 enum Role {
   User
   Admin
