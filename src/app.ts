@@ -12,10 +12,23 @@ app.use(express.json())
 
 dotenv.config({})
 const PORT = process.env.PORT || 3000;
+const cors = require("cors");
+
 app.use(
   cors({
-    origin: ["http://localhost:3000","http://localhost:3001"], // Add allowed origins
-    credentials: true, // If using cookies
+    origin: (origin, callback) => {
+      // Allow requests from localhost and Vercel deployments
+      if (
+        !origin || // Allow non-origin requests (e.g., from Postman)
+        origin.startsWith("http://localhost") || // Allow all localhost URLs
+        origin.endsWith(".vercel.app") // Allow all Vercel deployments
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS")); // Deny other origins
+      }
+    },
+    credentials: true, // Allow cookies
   })
 );
 
