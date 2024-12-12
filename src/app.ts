@@ -14,7 +14,7 @@ dotenv.config({})
 const PORT = process.env.PORT || 3000;
 app.use(
   cors({
-    origin: ["http://localhost:3000"], // Add allowed origins
+    origin: ["http://localhost:3000","http://localhost:3001"], // Add allowed origins
     credentials: true, // If using cookies
   })
 );
