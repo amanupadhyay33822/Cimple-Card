@@ -151,7 +151,14 @@ export const login: any = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+<<<<<<< HEAD
      
+=======
+    
+      
+      
+   
+>>>>>>> db91f6a671af8af05143c1e6427e01357f22d13a
     });
 
     // Return success response
@@ -161,6 +168,7 @@ export const login: any = async (req: Request, res: Response) => {
         id: user.id,
         token: token,
         email: user.email,
+        token:token,
         username: user.username,
       },
     });

@@ -12,7 +12,10 @@ app.use(express.json())
 
 dotenv.config({})
 const PORT = process.env.PORT || 3000;
+
+
 app.use(
+
 	cors({
 	  origin: (origin, callback) => {
 		// Allow requests from localhost and Vercel deployments
@@ -29,6 +32,7 @@ app.use(
 	  credentials: true, // Allow cookies
 	})
   );
+
 app.use("/api/user", UserRoutes);
 app.use("/api/card", cardRoutes);
 app.use("/api/appointment", appointmentRoutes);
