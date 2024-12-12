@@ -1,5 +1,6 @@
 import prisma from "../DB/dbconfig.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { sendOtpEmail } from "../utils/mailSender.js";
@@ -70,9 +71,11 @@ export const verifyOTP = async (req, res) => {
         });
         // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedId = crypto.createHash("sha256").update(email).digest("hex");
         // Create the new user in the database
         const newUser = await prisma.user.create({
             data: {
+                id: hashedId, // Assign the hashed value to the id field
                 email,
                 username: username || null, // Username is optional
                 password: hashedPassword,
@@ -121,14 +124,13 @@ export const login = async (req, res) => {
         res.cookie("token", token, {
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
             httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-            secure: process.env.NODE_ENV === "production", // Use 'secure' in production to send cookie only over HTTPS
-            // Allows the cookie to be sent with cross-origin requests
         });
         // Return success response
         return res.status(200).json({
             message: "Login successful",
             user: {
                 id: user.id,
+                token: token,
                 email: user.email,
                 username: user.username,
             },
@@ -190,7 +192,7 @@ export const updateUserDetails = async (req, res) => {
         }
         // Update user details in the database
         const updatedUser = await prisma.user.update({
-            where: { id: parseInt(userId) },
+            where: { id: userId },
             data: {
                 email,
                 username,

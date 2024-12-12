@@ -5,7 +5,8 @@ dotenv.config();
 export const verifyToken = async (req, res, next) => {
     try {
         // Extracting the token from various sources
-        const token = req.cookies.token || req.body.token || req.headers.authorization;
+        const token = req.body.token ||
+            req.cookies.token || req.headers.authorization;
         // If token is missing
         if (!token) {
             return res.status(401).json({

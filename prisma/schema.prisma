@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id                   Int       @id @default(autoincrement())
+ id                   String    @id @default(uuid())
   email                String    @unique
   password             String
   username             String
@@ -51,7 +51,7 @@ model Card {
   updatedAt                DateTime  @updatedAt
 //contact number
   user            User              @relation(fields: [userId], references: [id])
-  userId          Int
+  userId          String
   services        Service[] // Array of services provided
   testimonials    Testimonial[] // Array of testimonials
   SocialMediaLink SocialMediaLink[] // Social media links for the card
@@ -75,7 +75,7 @@ model Appointment {
   message     String
   createdAt   DateTime @default(now())
 
-  userId Int // Reference to the user who created the appointment
+  userId String // Reference to the user who created the appointment
   user   User @relation(fields: [userId], references: [id])
 }
 

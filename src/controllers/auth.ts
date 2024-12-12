@@ -1,6 +1,7 @@
 import prisma from "../DB/dbconfig.js";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
@@ -86,16 +87,17 @@ export const verifyOTP:any = async (req: Request, res: Response) => {
 
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedId = crypto.createHash("sha256").update(email).digest("hex");
 
     // Create the new user in the database
     const newUser = await prisma.user.create({
       data: {
+        id: hashedId, // Assign the hashed value to the id field
         email,
         username: username || null, // Username is optional
         password: hashedPassword,
       },
     });
-
     return res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -149,8 +151,7 @@ export const login: any = async (req: Request, res: Response) => {
     res.cookie("token", token, {
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: process.env.NODE_ENV === "production", // Use 'secure' in production to send cookie only over HTTPS
-      // Allows the cookie to be sent with cross-origin requests
+     
     });
 
     // Return success response
@@ -158,6 +159,7 @@ export const login: any = async (req: Request, res: Response) => {
       message: "Login successful",
       user: {
         id: user.id,
+        token: token,
         email: user.email,
         username: user.username,
       },
@@ -214,7 +216,7 @@ export const getUserDetails: any = async (req: Request, res: Response) => {
 };
 
 export const updateUserDetails:any = async (req: Request, res: Response) => {
-  const userId:Number = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
+  const userId:string = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
 
   const {
     email,
@@ -235,7 +237,7 @@ export const updateUserDetails:any = async (req: Request, res: Response) => {
 
     // Update user details in the database
     const updatedUser = await prisma.user.update({
-      where: { id: parseInt(userId) },
+      where: { id: userId },
       data: {
         email,
         username,
