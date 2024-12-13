@@ -27,7 +27,7 @@ model User {
 }
 
 model Card {
-  id                     Int               @id @default(autoincrement())
+  id                     String            @id @default(uuid())
   title                  String
   jobTitle               String?
   companyName            String?
@@ -87,7 +87,7 @@ model Service {
   name       String
   imageUrl   String?
   serviceUrl String?
-  cardId     Int
+  cardId     String
   card       Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
 
@@ -95,7 +95,7 @@ model SocialMediaLink {
   id       Int                 @id @default(autoincrement())
   platform SocialMediaPlatform
   url      String
-  cardId   Int?
+  cardId   String?
   iconUrl  String?
   card     Card?               @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }

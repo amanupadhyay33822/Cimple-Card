@@ -144,7 +144,7 @@ export const login = async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error", error });
     }
 };
 export const logout = (req, res) => {

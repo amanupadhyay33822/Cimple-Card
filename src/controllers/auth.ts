@@ -171,7 +171,7 @@ export const login: any = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" ,error});
   }
 };
 export const logout: any = (req: Request, res: Response) => {
