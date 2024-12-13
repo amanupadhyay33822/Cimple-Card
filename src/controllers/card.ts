@@ -157,7 +157,7 @@ export const createCard: any = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
   
-      const card = await prisma.card.findUnique({ where: { id: parseInt(id) } });
+     const card = await prisma.card.findUnique({ where: { id: id } });
   
       if (!card) return res.status(404).json({ success: false, message: "Card not found" });
   
