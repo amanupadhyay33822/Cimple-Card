@@ -157,7 +157,10 @@ export const createCard: any = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
   
-      const card = await prisma.card.findUnique({ where: { id: id } });
+
+
+     const card = await prisma.card.findUnique({ where: { id: id } });
+
   
       if (!card) return res.status(404).json({ success: false, message: "Card not found" });
   
@@ -181,7 +184,7 @@ export const updateCard: any = async (req: Request, res: Response) => {
 
     // Check if the card belongs to the logged-in user
     const card = await prisma.card.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     if (!card) {
@@ -232,7 +235,7 @@ export const updateCard: any = async (req: Request, res: Response) => {
 
     // Update the card with the dynamic fields
     const updatedCard = await prisma.card.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: updatedData,
     });
 
@@ -254,7 +257,7 @@ export const updateCard: any = async (req: Request, res: Response) => {
   
       // Find the card to check ownership
       const card = await prisma.card.findUnique({
-        where: { id: parseInt(id) },
+        where: { id: id },
       });
   
       if (!card) {
@@ -268,7 +271,7 @@ export const updateCard: any = async (req: Request, res: Response) => {
   
       // Delete the card
       await prisma.card.delete({
-        where: { id: parseInt(id) },
+        where: { id: id },
       });
   
       res.status(200).json({ success: true, message: "Card deleted successfully" });
