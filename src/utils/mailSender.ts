@@ -1,5 +1,9 @@
 import nodemailer from "nodemailer";
-
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
     auth: {
@@ -56,24 +60,21 @@ const transporter = nodemailer.createTransport({
     }
   };
 
-  export const sendOtpEmail = async (
-    email: string,
-    otp: string
-  ) => {
+  export const sendOtpEmail = async (email: string, otp: string) => {
     try {
+      // Read the HTML file template
+      const templatePath = path.join(__dirname, "otp_template.html");
+      let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
+  
+      // Replace placeholders in the HTML with dynamic values
+      htmlTemplate = htmlTemplate.replace("{{OTP}}", otp);
+      console.log("Customized HTML:", htmlTemplate);
+
       const mailOptions = {
         from: "your-email@example.com", // Replace with your email
         to: email,
         subject: "Your OTP for Verification",
-        text: `Dear User,
-         Below is your OTP for verification:
-      
-    - OTP: ${otp}
-      
-  Please note that this OTP is valid for only 5 minutes. If you did not request this OTP, please ignore this email.
-  
-  Best regards,  
-  Your Company`,
+        html: htmlTemplate, // Use the HTML content
       };
   
       // Send email using the configured transporter
@@ -98,8 +99,10 @@ const transporter = nodemailer.createTransport({
       };
     }
   };
-  export const mailSender = async (email:any, title:any, body:any) => {                            // with the help of this function we send mail of otp;      
+  
+  export const mailSender = async (email:any, title:any,name:any) => {                            // with the help of this function we send mail of otp;      
     try{
+
             let transporter = nodemailer.createTransport({                    // we send mail with the help of transporter and here MAIL_USER , MAIL_PASS contain app password of that email which send email 
                 host:process.env.MAIL_HOST,                               
                 auth:{
@@ -108,11 +111,14 @@ const transporter = nodemailer.createTransport({
                 }
             })
 
+const templatePath = path.join(__dirname, "signup_template.html");
+      let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
+      htmlTemplate = htmlTemplate.replace("{{name}}", name);
             let info = await transporter.sendMail({
-                from: 'StudyNotion - by Abhikant Singh',
+                from: 'CimpleCard',
                 to:`${email}`,
                 subject: `${title}`,
-                html: `${body}`,
+                html:htmlTemplate,
             })
             console.log(info);
             return info;

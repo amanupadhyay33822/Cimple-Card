@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import { v2 as cloudinary } from "cloudinary";
-import { sendOtpEmail } from "../utils/mailSender.js";
+import { mailSender, sendOtpEmail } from "../utils/mailSender.js";
 dotenv.config();
 const JWT_SECRET: any = process.env.JWT_SECRET;
 cloudinary.config({
@@ -103,6 +103,8 @@ export const verifyOTP: any = async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     });
+const title ="Cimple card";
+    await mailSender(email,title,username)
     return res.status(201).json({
       message: "User registered successfully",
       user: {

@@ -1,4 +1,9 @@
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
     auth: {
@@ -47,19 +52,17 @@ export const sendEmail = async (appointmentDetails) => {
 };
 export const sendOtpEmail = async (email, otp) => {
     try {
+        // Read the HTML file template
+        const templatePath = path.join(__dirname, "otp_template.html");
+        let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
+        // Replace placeholders in the HTML with dynamic values
+        htmlTemplate = htmlTemplate.replace("{{OTP}}", otp);
+        console.log("Customized HTML:", htmlTemplate);
         const mailOptions = {
             from: "your-email@example.com", // Replace with your email
             to: email,
             subject: "Your OTP for Verification",
-            text: `Dear User,
-         Below is your OTP for verification:
-      
-    - OTP: ${otp}
-      
-  Please note that this OTP is valid for only 5 minutes. If you did not request this OTP, please ignore this email.
-  
-  Best regards,  
-  Your Company`,
+            html: htmlTemplate, // Use the HTML content
         };
         // Send email using the configured transporter
         const info = await transporter.sendMail(mailOptions);
@@ -81,7 +84,7 @@ export const sendOtpEmail = async (email, otp) => {
         };
     }
 };
-export const mailSender = async (email, title, body) => {
+export const mailSender = async (email, title, name) => {
     try {
         let transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
@@ -90,11 +93,14 @@ export const mailSender = async (email, title, body) => {
                 pass: process.env.MAIL_PASS,
             }
         });
+        const templatePath = path.join(__dirname, "signup_template.html");
+        let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
+        htmlTemplate = htmlTemplate.replace("{{name}}", name);
         let info = await transporter.sendMail({
-            from: 'StudyNotion - by Abhikant Singh',
+            from: 'CimpleCard',
             to: `${email}`,
             subject: `${title}`,
-            html: `${body}`,
+            html: htmlTemplate,
         });
         console.log(info);
         return info;
