@@ -93,11 +93,11 @@ export const verifyOTP: any = async (req: Request, res: Response) => {
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedId = crypto.createHash("sha256").update(email).digest("hex");
-
+ 
     // Create the new user in the database
     const newUser = await prisma.user.create({
       data: {
-        id: hashedId, // Assign the hashed value to the id field
+        id: (hashedId), // Assign the hashed value to the id field
         email,
         username: username || null, // Username is optional
         password: hashedPassword,

@@ -81,7 +81,7 @@ export const verifyOTP = async (req, res) => {
         // Create the new user in the database
         const newUser = await prisma.user.create({
             data: {
-                id: hashedId, // Assign the hashed value to the id field
+                id: (hashedId), // Assign the hashed value to the id field
                 email,
                 username: username || null, // Username is optional
                 password: hashedPassword,
