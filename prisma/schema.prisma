@@ -23,6 +23,7 @@ model User {
   contactNumber        String?
   designation          String?
   Appointment          Appointment[]
+  
   cards                Card[]
 }
 
@@ -31,6 +32,7 @@ model Card {
   title                  String
   jobTitle               String?
   companyName            String?
+  location               String?
   profileImageUrl        String?
   templateType           String
   uniqueUrl              String            @unique
@@ -55,20 +57,32 @@ model Card {
   emergencyName          String?
   emergencyNumber        String?
   emergencyRelationship  String?
-  githubLink             String?
+  linkedinLink           String?
+  twitterLink            String?
   instagramLink          String?
   languageSpoken         String?
   otherEmails            String?
   otherPhoneNumber       String?
   phoneNumber            String?
   productDesc            String?
-  testimonialIndustry    String?
-  testimonialMessage     String?
-  testimonialName        String?
+  gallery                String[]
+  instagramPost          String[]
+  instagramReel          String[]
   testimonialRole        String?
   user                   User              @relation(fields: [userId], references: [id])
   services               Service[]
   SocialMediaLink        SocialMediaLink[]
+  testimonials           Testimonial[]
+}
+
+model Testimonial {
+  id          Int      @id @default(autoincrement())
+  name        String
+  imageUrl    String?
+  description String
+  createdAt   DateTime @default(now())
+  cardId      String
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model Appointment {
@@ -79,6 +93,7 @@ model Appointment {
   message     String
   createdAt   DateTime @default(now())
   userId      String
+  //add card id
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

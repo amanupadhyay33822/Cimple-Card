@@ -55,7 +55,13 @@ export const createCard: any = async (req: Request, res: Response) => {
       youtubeVideoLink,
       services,
       SocialMediaLink,
+      gallery,
+      instagramPost,
+      instagramReel,
     } = req.body;
+    const galleryArray = Array.isArray(gallery) ? gallery : JSON.parse(gallery || "[]");
+    const instagramPostArray = Array.isArray(instagramPost) ? instagramPost : JSON.parse(instagramPost || "[]");
+    const instagramReelArray = Array.isArray(instagramReel) ? instagramReel : JSON.parse(instagramReel || "[]");
 
     // Upload profile image to Cloudinary if provided
     let profileImageUrl = null;
@@ -107,6 +113,9 @@ export const createCard: any = async (req: Request, res: Response) => {
         instagramVideoLink: instagramVideoLink || null,
         youtubeVideoLink: youtubeVideoLink || null,
         userId,
+        gallery: galleryArray,
+        instagramPost: instagramPostArray,
+        instagramReel: instagramReelArray,
         services: {
           create: services?.map((service: any) => ({
             name: service.name,
@@ -129,7 +138,6 @@ export const createCard: any = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
   
   // Get all cards
   export const getAllCards:any = async (req: Request, res: Response) => {
@@ -171,7 +179,27 @@ export const createCard: any = async (req: Request, res: Response) => {
   };
   
   // Update a card
-
+  export const getServicesByCardId:any = async (req: Request, res: Response) => {
+    try {
+      const { cardId } = req.params;
+  
+      // Find all services associated with the given cardId
+      const services = await prisma.service.findMany({
+        where: { cardId: cardId },
+      });
+  
+      // If no services are found, return a 404 response
+      if (!services || services.length === 0) {
+        return res.status(404).json({ success: false, message: "No services found for this card" });
+      }
+  
+      // Respond with the list of services
+      res.status(200).json({ success: true, services });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  };
+  
 
 export const updateCard: any = async (req: Request, res: Response) => {
   try {

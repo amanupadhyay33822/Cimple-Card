@@ -1,5 +1,5 @@
 import express from "express";
-import { createCard, getAllCards, getCardById, updateCard, deleteCard, } from "../controllers/card.js";
+import { createCard, getAllCards, getCardById, updateCard, deleteCard, getServicesByCardId, } from "../controllers/card.js";
 import { verifyToken } from "../middleware/auth.js";
 import multer from "multer";
 const upload = multer({ dest: "uploads/" });
@@ -10,6 +10,7 @@ router.post("/create", verifyToken, upload.single("image"), createCard);
 router.get("/get", verifyToken, getAllCards);
 // Get a specific card by ID
 router.get("/get/:id", getCardById);
+router.get("/get/service/:cardId", getServicesByCardId);
 // Update a card by ID
 router.put("/update/:id", verifyToken, updateCard);
 // Delete a card by ID

@@ -11,7 +11,10 @@ cloudinary.config({
 export const createCard = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { title, companyName, companyAddress, jobTitle, bio, languageSpoken, dateOfBirth, phoneNumber, phoneNumbers, otherPhoneNumber, emails, otherEmails, emergencyName, emergencyRelationship, emergencyNumber, emergencyEmail, companySocialMediaLink, instagramLink, githubLink, additionalLink, productDesc, testimonialName, testimonialRole, testimonialIndustry, testimonialMessage, businesshoursFrom, businesshoursTo, businessType, templateType, aboutUs, qrCodeUrl, instagramVideoLink, youtubeVideoLink, services, SocialMediaLink, } = req.body;
+        const { title, companyName, companyAddress, jobTitle, bio, languageSpoken, dateOfBirth, phoneNumber, phoneNumbers, otherPhoneNumber, emails, otherEmails, emergencyName, emergencyRelationship, emergencyNumber, emergencyEmail, companySocialMediaLink, instagramLink, githubLink, additionalLink, productDesc, testimonialName, testimonialRole, testimonialIndustry, testimonialMessage, businesshoursFrom, businesshoursTo, businessType, templateType, aboutUs, qrCodeUrl, instagramVideoLink, youtubeVideoLink, services, SocialMediaLink, gallery, instagramPost, instagramReel, } = req.body;
+        const galleryArray = Array.isArray(gallery) ? gallery : JSON.parse(gallery || "[]");
+        const instagramPostArray = Array.isArray(instagramPost) ? instagramPost : JSON.parse(instagramPost || "[]");
+        const instagramReelArray = Array.isArray(instagramReel) ? instagramReel : JSON.parse(instagramReel || "[]");
         // Upload profile image to Cloudinary if provided
         let profileImageUrl = null;
         if (req.file) {
@@ -60,6 +63,9 @@ export const createCard = async (req, res) => {
                 instagramVideoLink: instagramVideoLink || null,
                 youtubeVideoLink: youtubeVideoLink || null,
                 userId,
+                gallery: galleryArray,
+                instagramPost: instagramPostArray,
+                instagramReel: instagramReelArray,
                 services: {
                     create: services?.map((service) => ({
                         name: service.name,
@@ -115,6 +121,24 @@ export const getCardById = async (req, res) => {
     }
 };
 // Update a card
+export const getServicesByCardId = async (req, res) => {
+    try {
+        const { cardId } = req.params;
+        // Find all services associated with the given cardId
+        const services = await prisma.service.findMany({
+            where: { cardId: cardId },
+        });
+        // If no services are found, return a 404 response
+        if (!services || services.length === 0) {
+            return res.status(404).json({ success: false, message: "No services found for this card" });
+        }
+        // Respond with the list of services
+        res.status(200).json({ success: true, services });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
 export const updateCard = async (req, res) => {
     try {
         const { id } = req.params;
@@ -124,7 +148,7 @@ export const updateCard = async (req, res) => {
         }
         // Check if the card belongs to the logged-in user
         const card = await prisma.card.findUnique({
-            where: { id: parseInt(id) },
+            where: { id: id },
         });
         if (!card) {
             return res.status(404).json({ success: false, message: "Card not found" });
@@ -177,7 +201,7 @@ export const updateCard = async (req, res) => {
             updatedData.addresses = addresses;
         // Update the card with the dynamic fields
         const updatedCard = await prisma.card.update({
-            where: { id: parseInt(id) },
+            where: { id: id },
             data: updatedData,
         });
         res.status(200).json({ success: true, card: updatedCard });
@@ -196,7 +220,7 @@ export const deleteCard = async (req, res) => {
         }
         // Find the card to check ownership
         const card = await prisma.card.findUnique({
-            where: { id: parseInt(id) },
+            where: { id: id },
         });
         if (!card) {
             return res.status(404).json({ success: false, message: "Card not found" });
@@ -207,7 +231,7 @@ export const deleteCard = async (req, res) => {
         }
         // Delete the card
         await prisma.card.delete({
-            where: { id: parseInt(id) },
+            where: { id: id },
         });
         res.status(200).json({ success: true, message: "Card deleted successfully" });
     }

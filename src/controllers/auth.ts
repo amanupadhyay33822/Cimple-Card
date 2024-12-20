@@ -156,6 +156,7 @@ export const login: any = async (req: Request, res: Response) => {
 
     // Set the token in a cookie
     res.cookie("token", token, {
+      path: "/", 
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
     });
