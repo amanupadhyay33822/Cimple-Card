@@ -176,7 +176,7 @@ export const uploadImage = async (req, res) => {
             });
             profileImageUrl = result.secure_url;
         }
-        return res.status(200).json({ message: "Logout successful", profileImageUrl });
+        return res.status(200).json({ profileImageUrl });
     }
     catch (error) {
         console.error("Logout error:", error);
