@@ -128,7 +128,6 @@ export const login = async (req, res) => {
         // Generate a JWT token
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "1h" } // Set token expiration
         );
-        // Set the token in a cookie
         res.cookie("token", token, {
             path: "/",
             maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
@@ -168,6 +167,22 @@ export const logout = (req, res) => {
     }
 };
 // Adjust the import path to your Prisma instance
+export const uploadImage = async (req, res) => {
+    try {
+        let profileImageUrl = null;
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "profile_images",
+            });
+            profileImageUrl = result.secure_url;
+        }
+        return res.status(200).json({ message: "Logout successful", profileImageUrl });
+    }
+    catch (error) {
+        console.error("Logout error:", error);
+        return res.status(500).json({ message: "Server error during logout" });
+    }
+};
 export const getUserDetails = async (req, res) => {
     try {
         const userId = req.user?.id; // Extract the logged-in user's ID

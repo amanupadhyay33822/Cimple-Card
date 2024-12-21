@@ -34,25 +34,22 @@ model Card {
   companyName            String?
   location               String?
   profileImageUrl        String?
+  headerImageUrl         String?
   templateType           String
-  uniqueUrl              String            @unique
+  cardName               String            @unique //baseurl + title + 
   qrCodeUrl              String?
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   userId                 String
   aboutUs                String?
-  companySocialMediaLink String?
+  comanyAddress          String?
   dateOfBirth            String?
-  emails                 String?
-  phoneNumbers           String?
-  instagramVideoLink     String?
-  youtubeVideoLink       String?
+  emails                 String[]
+  phoneNumbers           String[]
+  youtubeVideoLink       String[]
   additionalLink         String?
   bio                    String?
-  businessType           String?
-  businesshoursFrom      String?
-  businesshoursTo        String?
-  companyAddress         String?
+  gridType               String?  // it is for track wheather user want products or services
   emergencyEmail         String?
   emergencyName          String?
   emergencyNumber        String?
@@ -65,21 +62,31 @@ model Card {
   otherPhoneNumber       String?
   phoneNumber            String?
   productDesc            String?
+  facebookLink           String?
   gallery                String[]
   instagramPost          String[]
   instagramReel          String[]
-  testimonialRole        String?
   user                   User              @relation(fields: [userId], references: [id])
   services               Service[]
   SocialMediaLink        SocialMediaLink[]
   testimonials           Testimonial[]
+  businessHours          business[]
+  companySocialMediaLink  companySocialMediaLink[]
 }
-
+model business {
+  id          Int      @id @default(autoincrement())
+  type           String?
+  from      String?
+  to        String?
+  cardId      String
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
 model Testimonial {
   id          Int      @id @default(autoincrement())
   name        String
   imageUrl    String?
   description String
+  desgination String
   createdAt   DateTime @default(now())
   cardId      String
   card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
@@ -91,9 +98,10 @@ model Appointment {
   phoneNumber String
   email       String
   message     String
+  timing      DateTime @default(now())
   createdAt   DateTime @default(now())
   userId      String
-  //add card id
+  cardId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -102,18 +110,28 @@ model Service {
   name       String
   imageUrl   String?
   serviceUrl String?
+  description String?
   cardId     String
   card       Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 model SocialMediaLink {
   id       Int                 @id @default(autoincrement())
-  platform SocialMediaPlatform
+  platform String
   url      String
   cardId   String?
   iconUrl  String?
   card     Card?               @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
+model companySocialMediaLink {
+  id       Int                 @id @default(autoincrement())
+  platform String
+  url      String
+  cardId   String?
+  iconUrl  String?
+  card     Card?               @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
 
 model OTP {
   id        Int      @id @default(autoincrement())

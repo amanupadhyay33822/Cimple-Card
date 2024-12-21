@@ -1,13 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import prisma from "../DB/dbconfig.js";
-import { randomUUID, randomBytes } from 'crypto';
-
+import { randomUUID, randomBytes } from "crypto";
 
 // Create a new card
 
-
- // Adjust path as per your project structure
+// Adjust path as per your project structure
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -19,51 +17,111 @@ cloudinary.config({
 export const createCard: any = async (req: Request, res: Response) => {
   try {
     const userId = req.user.id;
+    console.log(userId);
     const {
       title,
-      companyName,
-      companyAddress,
       jobTitle,
-      bio,
-      languageSpoken,
-      dateOfBirth,
-      phoneNumber,
-      phoneNumbers,
-      otherPhoneNumber,
-      emails,
-      otherEmails,
-      emergencyName,
-      emergencyRelationship,
-      emergencyNumber,
-      emergencyEmail,
-      companySocialMediaLink,
-      instagramLink,
-      githubLink,
-      additionalLink,
-      productDesc,
-      testimonialName,
-      testimonialRole,
-      testimonialIndustry,
-      testimonialMessage,
-      businesshoursFrom,
-      businesshoursTo,
-      businessType,
+      companyName,
+      location,
       templateType,
-      aboutUs,
+      cardName,
       qrCodeUrl,
-      instagramVideoLink,
+      aboutUs,
+      companySocialMediaLink,
+      dateOfBirth,
+      emails,
+      phoneNumbers,
       youtubeVideoLink,
-      services,
-      SocialMediaLink,
+      additionalLink,
+      bio,
+
+      
+      comanyAddress,
+      emergencyEmail,
+      emergencyName,
+      emergencyNumber,
+      emergencyRelationship,
+      linkedinLink,
+      twitterLink,
+      instagramLink,
+      languageSpoken,
+      otherEmails,
+      otherPhoneNumber,
+      phoneNumber,
+      productDesc,
+      facebookLink,
       gallery,
       instagramPost,
       instagramReel,
+      services,
+      socialMediaLink,
+      testimonials,
+      businessHours,
     } = req.body;
-    const galleryArray = Array.isArray(gallery) ? gallery : JSON.parse(gallery || "[]");
-    const instagramPostArray = Array.isArray(instagramPost) ? instagramPost : JSON.parse(instagramPost || "[]");
-    const instagramReelArray = Array.isArray(instagramReel) ? instagramReel : JSON.parse(instagramReel || "[]");
 
-    // Upload profile image to Cloudinary if provided
+    // Validate required fields
+    if (!title || !jobTitle || !companyName) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Title, jobTitle, and companyName are required.",
+        });
+    }
+
+    // Parse arrays if provided as strings
+    const galleryArray = Array.isArray(gallery)
+      ? gallery
+      : JSON.parse(gallery || "[]");
+    const instagramPostArray = Array.isArray(instagramPost)
+      ? instagramPost
+      : JSON.parse(instagramPost || "[]");
+    const instagramReelArray = Array.isArray(instagramReel)
+      ? instagramReel
+      : JSON.parse(instagramReel || "[]");
+
+    // Handle optional fields
+    const serviceObject = services
+      ? {
+          name: services.name,
+          imageUrl: services.imageUrl,
+          serviceUrl: services.serviceUrl,
+        }
+      : null;
+
+    const socialMediaLinkObject = socialMediaLink
+      ? {
+          platform: socialMediaLink.platform,
+          url: socialMediaLink.url,
+          iconUrl: socialMediaLink.iconUrl,
+        }
+      : null;
+    const businessLinkObject = businessHours
+      ? {
+          type: businessHours.type,
+          from: businessHours.from,
+          to: businessHours.to,
+        }
+      : null;
+    const companySocialMediaLinkObject = companySocialMediaLink
+      ? {
+          platform: companySocialMediaLink.platform,
+          url: companySocialMediaLink.url,
+          iconUrl: companySocialMediaLink.iconUrl,
+        }
+      : null;
+
+    const testimonialObject = testimonials
+      ? {
+          name: testimonials.name,
+          imageUrl: testimonials.imageUrl,
+          description: testimonials.description,
+        }
+      : null;
+
+    // Generate unique custom ID and URL
+    const customId: string = randomBytes(16).toString("hex");
+    const url = `http://localhost:3000/medical/${customId}`;
     let profileImageUrl = null;
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -72,134 +130,127 @@ export const createCard: any = async (req: Request, res: Response) => {
       profileImageUrl = result.secure_url;
     }
 
-    const customId: string = randomBytes(16).toString("hex");
-    const url = `http://localhost:3000/medical/${customId}`;
-
+    // Create the new card in the database
     const newCard = await prisma.card.create({
       data: {
         title,
-        companyName: companyName || null,
-        companyAddress: companyAddress || null,
-        jobTitle: jobTitle || null,
-        bio: bio || null,
-        languageSpoken: languageSpoken || null,
-        dateOfBirth: dateOfBirth || null,
-        phoneNumber: phoneNumber || null,
-        phoneNumbers: phoneNumbers || null,
-        otherPhoneNumber: otherPhoneNumber || null,
-        emails: emails || null,
-        otherEmails: otherEmails || null,
-        emergencyName: emergencyName || null,
-        emergencyRelationship: emergencyRelationship || null,
-        emergencyNumber: emergencyNumber || null,
-        emergencyEmail: emergencyEmail || null,
-        companySocialMediaLink: companySocialMediaLink || null,
-        instagramLink: instagramLink || null,
-        githubLink: githubLink || null,
-        additionalLink: additionalLink || null,
-        productDesc: productDesc || null,
-        testimonialName: testimonialName || null,
-        testimonialRole: testimonialRole || null,
-        testimonialIndustry: testimonialIndustry || null,
-        testimonialMessage: testimonialMessage || null,
-        businesshoursFrom: businesshoursFrom || null,
-        businesshoursTo: businesshoursTo || null,
-        businessType: businessType || null,
-        profileImageUrl,
+        jobTitle,
+        companyName,
+        location,
+        profileImageUrl: profileImageUrl || null,
         templateType,
-        uniqueUrl: url,
+        cardName: cardName || url,
         qrCodeUrl: qrCodeUrl || null,
         aboutUs: aboutUs || null,
-        instagramVideoLink: instagramVideoLink || null,
+        companySocialMediaLink: companySocialMediaLinkObject || null,
+        dateOfBirth: dateOfBirth || null,
+        emails: emails || null,
+        phoneNumbers: phoneNumbers || null,
+
         youtubeVideoLink: youtubeVideoLink || null,
-        userId,
+        additionalLink: additionalLink || null,
+        bio: bio || null,
+
+       
+        comanyAddress: comanyAddress || null,
+        emergencyEmail: emergencyEmail || null,
+        emergencyName: emergencyName || null,
+        emergencyNumber: emergencyNumber || null,
+        emergencyRelationship: emergencyRelationship || null,
+        linkedinLink: linkedinLink || null,
+        twitterLink: twitterLink || null,
+        instagramLink: instagramLink || null,
+        languageSpoken: languageSpoken || null,
+        otherEmails: otherEmails || null,
+        otherPhoneNumber: otherPhoneNumber || null,
+        phoneNumber: phoneNumber || null,
+        productDesc: productDesc || null,
+        facebookLink: facebookLink || null,
         gallery: galleryArray,
         instagramPost: instagramPostArray,
         instagramReel: instagramReelArray,
-        services: {
-          create: services?.map((service: any) => ({
-            name: service.name,
-            imageUrl: service.imageUrl,
-            serviceUrl: service.serviceUrl,
-          })) || [],
-        },
-        SocialMediaLink: {
-          create: SocialMediaLink?.map((link: any) => ({
-            platform: link.platform,
-            url: link.url,
-            iconUrl: link.iconUrl,
-          })) || [],
+       
+        services: serviceObject,
+        SocialMediaLink: socialMediaLinkObject,
+        testimonials: testimonialObject,
+        businessHours:businessLinkObject,
+        user: {
+          connect: { id: userId }, // Connect the existing user by ID
         },
       },
     });
 
     res.status(201).json({ success: true, card: newCard });
   } catch (error: any) {
+    console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
-  
-  // Get all cards
-  export const getAllCards:any = async (req: Request, res: Response) => {
-    try {
-      const userId = req.user?.id;
 
-      if (!userId) {
-        return res.status(401).json({ success: false, message: "Unauthorized user" });
-      }
-  
-      // Fetch cards associated with the logged-in user
-      const cards = await prisma.card.findMany({
-        where: {
-          userId: userId,
-        },
-      });
-      res.status(200).json({ success: true, cards });
-    } catch (error:any) {
-      res.status(500).json({ success: false, error: error.message });
+// Get all cards
+export const getAllCards: any = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized user" });
     }
-  };
-  
-  // Get a card by ID
-  export const getCardById:any = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-  
 
+    // Fetch cards associated with the logged-in user
+    const cards = await prisma.card.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    res.status(200).json({ success: true, cards });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 
-     const card = await prisma.card.findUnique({ where: { id: id } });
+// Get a card by ID
+export const getCardById: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
 
-  
-      if (!card) return res.status(404).json({ success: false, message: "Card not found" });
-  
-      res.status(200).json({ success: true, card });
-    } catch (error:any) {
-      res.status(500).json({ success: false, error: error.message });
+    const card = await prisma.card.findUnique({ where: { id: id } });
+
+    if (!card)
+      return res
+        .status(404)
+        .json({ success: false, message: "Card not found" });
+
+    res.status(200).json({ success: true, card });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// Update a card
+export const getServicesByCardId: any = async (req: Request, res: Response) => {
+  try {
+    const { cardId } = req.params;
+
+    // Find all services associated with the given cardId
+    const services = await prisma.service.findMany({
+      where: { cardId: cardId },
+    });
+
+    // If no services are found, return a 404 response
+    if (!services || services.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No services found for this card" });
     }
-  };
-  
-  // Update a card
-  export const getServicesByCardId:any = async (req: Request, res: Response) => {
-    try {
-      const { cardId } = req.params;
-  
-      // Find all services associated with the given cardId
-      const services = await prisma.service.findMany({
-        where: { cardId: cardId },
-      });
-  
-      // If no services are found, return a 404 response
-      if (!services || services.length === 0) {
-        return res.status(404).json({ success: false, message: "No services found for this card" });
-      }
-  
-      // Respond with the list of services
-      res.status(200).json({ success: true, services });
-    } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
-    }
-  };
-  
+
+    // Respond with the list of services
+    res.status(200).json({ success: true, services });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 
 export const updateCard: any = async (req: Request, res: Response) => {
   try {
@@ -216,19 +267,38 @@ export const updateCard: any = async (req: Request, res: Response) => {
     });
 
     if (!card) {
-      return res.status(404).json({ success: false, message: "Card not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Card not found" });
     }
 
     if (card.userId !== userId) {
-      return res.status(403).json({ success: false, message: "Forbidden: You cannot update this card" });
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Forbidden: You cannot update this card",
+        });
     }
 
     // Extract fields from the request body
     const {
-      title, bio, phoneNumbers, emails, templateType, qrCodeUrl,
-      aboutUs, instagramVideoLink, youtubeVideoLink, companySocialMediaLink,
-      profileImageUrl, personalSocialMediaLinks, jobTitle, companyName,
-      dateOfBirth, addresses,
+      title,
+      bio,
+      phoneNumbers,
+      emails,
+      templateType,
+      qrCodeUrl,
+      aboutUs,
+      instagramVideoLink,
+      youtubeVideoLink,
+      companySocialMediaLink,
+      profileImageUrl,
+      personalSocialMediaLinks,
+      jobTitle,
+      companyName,
+      dateOfBirth,
+      addresses,
     } = req.body;
 
     // Create a dynamic data object
@@ -244,9 +314,11 @@ export const updateCard: any = async (req: Request, res: Response) => {
     if (aboutUs) updatedData.aboutUs = aboutUs;
     if (instagramVideoLink) updatedData.instagramVideoLink = instagramVideoLink;
     if (youtubeVideoLink) updatedData.youtubeVideoLink = youtubeVideoLink;
-    if (companySocialMediaLink) updatedData.companySocialMediaLink = companySocialMediaLink;
+    if (companySocialMediaLink)
+      updatedData.companySocialMediaLink = companySocialMediaLink;
     if (profileImageUrl) updatedData.profileImageUrl = profileImageUrl;
-    if (personalSocialMediaLinks) updatedData.personalSocialMediaLinks = personalSocialMediaLinks;
+    if (personalSocialMediaLinks)
+      updatedData.personalSocialMediaLinks = personalSocialMediaLinks;
     if (jobTitle) updatedData.jobTitle = jobTitle;
     if (companyName) updatedData.companyName = companyName;
 
@@ -254,7 +326,9 @@ export const updateCard: any = async (req: Request, res: Response) => {
     if (dateOfBirth) {
       const parsedDate = new Date(dateOfBirth);
       if (isNaN(parsedDate.getTime())) {
-        return res.status(400).json({ success: false, error: "Invalid dateOfBirth format" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid dateOfBirth format" });
       }
       updatedData.dateOfBirth = parsedDate;
     }
@@ -273,38 +347,46 @@ export const updateCard: any = async (req: Request, res: Response) => {
   }
 };
 
-  // Delete a card
-  export const deleteCard: any = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const userId = req.user?.id; // Get the logged-in user's ID from the request object
-  
-      if (!userId) {
-        return res.status(401).json({ success: false, message: "Unauthorized" });
-      }
-  
-      // Find the card to check ownership
-      const card = await prisma.card.findUnique({
-        where: { id: id },
-      });
-  
-      if (!card) {
-        return res.status(404).json({ success: false, message: "Card not found" });
-      }
-  
-      // Check if the logged-in user is the owner of the card
-      if (card.userId !== userId) {
-        return res.status(403).json({ success: false, message: "You are not authorized to delete this card" });
-      }
-  
-      // Delete the card
-      await prisma.card.delete({
-        where: { id: id },
-      });
-  
-      res.status(200).json({ success: true, message: "Card deleted successfully" });
-    } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+// Delete a card
+export const deleteCard: any = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id; // Get the logged-in user's ID from the request object
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-  };
-  
+
+    // Find the card to check ownership
+    const card = await prisma.card.findUnique({
+      where: { id: id },
+    });
+
+    if (!card) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Card not found" });
+    }
+
+    // Check if the logged-in user is the owner of the card
+    if (card.userId !== userId) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "You are not authorized to delete this card",
+        });
+    }
+
+    // Delete the card
+    await prisma.card.delete({
+      where: { id: id },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Card deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

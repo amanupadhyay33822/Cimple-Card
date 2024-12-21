@@ -10,8 +10,8 @@ export const verifyToken: any = async (
   next: NextFunction
 ) => {
   try {
-    console.log(req.cookies)
-    // console.log(req.cookies.token)
+   
+    console.log(req.cookies.token)
     // console.log(req.headers.authorization)
     // Extracting the token from various sources
     const token =req.body.token||
@@ -33,11 +33,11 @@ export const verifyToken: any = async (
       });
       // Use 'as string' for type assertion
       req.user = payload; // Assign the decoded user to the request object
-    } catch (error) {
+    } catch (error:any) {
       // Verification issue
       return res.status(401).json({
         success: false,
-        message: "Token is invalid",
+        message: error.message,
       });
     }
     next(); // Proceed to the next middleware

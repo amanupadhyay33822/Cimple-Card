@@ -154,12 +154,12 @@ export const login: any = async (req: Request, res: Response) => {
       { expiresIn: "1h" } // Set token expiration
     );
 
-    // Set the token in a cookie
     res.cookie("token", token, {
       path: "/", 
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day in milliseconds
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
     });
+
 
     // Return success response
     return res.status(200).json({
@@ -195,7 +195,21 @@ export const logout: any = (req: Request, res: Response) => {
   }
 };
 // Adjust the import path to your Prisma instance
-
+export const uploadImage: any = async (req: Request, res: Response) => {
+  try {
+    let profileImageUrl = null;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "profile_images",
+      });
+      profileImageUrl = result.secure_url;
+    }
+    return res.status(200).json({ message: "Logout successful" ,profileImageUrl});
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: "Server error during logout" });
+  }
+};
 export const getUserDetails: any = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id; // Extract the logged-in user's ID
