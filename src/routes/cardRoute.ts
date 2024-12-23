@@ -6,6 +6,7 @@ import {
   updateCard,
   deleteCard,
   getServicesByCardId,
+  getCardDetails,
 } from "../controllers/card.js";
 import { verifyToken } from "../middleware/auth.js";
 import multer from "multer";
@@ -21,8 +22,9 @@ router.get("/get", verifyToken,getAllCards);
 
 // Get a specific card by ID
 router.get("/get/:id", getCardById);
-router.get("/get/service/:cardId",getServicesByCardId)
 
+router.get("/get/service/:cardId",getServicesByCardId)
+router.get("/getby/:id?/:name?", getCardDetails);
 // Update a card by ID
 router.put("/update/:id",  verifyToken,updateCard);
 

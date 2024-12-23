@@ -227,6 +227,35 @@ export const getCardById: any = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+export const getCardDetails: any = async (req: Request, res: Response) => {
+  try {
+    const { id, name } = req.params;
+
+    // Validate that at least one parameter is provided
+    if (!id && !name) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide either 'id' or 'name' to fetch card details",
+      });
+    }
+
+    // Fetch card using either id or name
+    const card = await prisma.card.findFirst({
+      where: name ? { id:id } : { cardName: name },
+    });
+
+    if (!card) {
+      return res.status(404).json({
+        success: false,
+        message: "Card not found",
+      });
+    }
+
+    res.status(200).json({ success: true, card });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 
 // Update a card
 export const getServicesByCardId: any = async (req: Request, res: Response) => {
