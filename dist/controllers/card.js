@@ -78,6 +78,7 @@ export const createCard = async (req, res) => {
             });
             profileImageUrl = result.secure_url;
         }
+        let qrcodeurl = `http://localhost:3000/${customId}/${cardName}`;
         // Create the new card in the database
         const newCard = await prisma.card.create({
             data: {
@@ -88,7 +89,7 @@ export const createCard = async (req, res) => {
                 profileImageUrl: profileImageUrl || null,
                 templateType,
                 cardName: cardName || url,
-                qrCodeUrl: qrCodeUrl || null,
+                qrCodeUrl: qrcodeurl || null,
                 aboutUs: aboutUs || null,
                 companySocialMediaLink: companySocialMediaLinkObject || null,
                 dateOfBirth: dateOfBirth || null,
