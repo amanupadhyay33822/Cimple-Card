@@ -14,26 +14,25 @@ dotenv.config({})
 const PORT = process.env.PORT || 3000;
 
 
-// app.use(
+app.use(
 
-// 	cors({
-// 	  origin: (origin, callback) => {
-// 		// Allow requests from localhost and Vercel deployments
-// 		if (
-// 		  !origin || // Allow non-origin requests (e.g., from Postman)
-// 		  origin.startsWith("http://localhost") || // Allow all localhost URLs
-// 		  origin.endsWith(".vercel.app") // Allow all Vercel deployments
-// 		) {
-// 		  callback(null, true);
-// 		} else {
-// 		  callback(new Error("Not allowed by CORS")); // Deny other origins
-// 		}
-// 	  },
-// 	  credentials: true, // Allow cookies
-// 	})
-//   );
+	cors({
+	  origin: (origin, callback) => {
+		// Allow requests from localhost and Vercel deployments
+		if (
+		  !origin || // Allow non-origin requests (e.g., from Postman)
+		  origin.startsWith("http://localhost") || // Allow all localhost URLs
+		  origin.endsWith(".vercel.app") // Allow all Vercel deployments
+		) {
+		  callback(null, true);
+		} else {
+		  callback(new Error("Not allowed by CORS")); // Deny other origins
+		}
+	  },
+	  credentials: true, // Allow cookies
+	})
+  );
 
-app.use(cors());
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true , limit: "50mb" }));
