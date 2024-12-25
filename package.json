@@ -19,7 +19,7 @@
     "@types/nodemailer": "^6.4.17",
     "prisma": "^6.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "file:"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
