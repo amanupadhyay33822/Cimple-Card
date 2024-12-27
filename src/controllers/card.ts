@@ -145,17 +145,15 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         cardName: cardName || url,
         qrCodeUrl: qrcodeurl || null,
         aboutUs: aboutUs || null,
-        gridType:gridType||null,
-        companySocialMediaLink: companySocialMediaLinkObject || null,
+        gridType: gridType || null,
+        companySocialMediaLink: companySocialMediaLink || null,
         dateOfBirth: dateOfBirth || null,
         emails: emails || null,
         phoneNumbers: phoneNumbers || null,
-        headerImageUrl:headerImageUrl || null,
+        headerImageUrl: headerImageUrl || null,
         youtubeVideoLink: youtubeVideoLink || null,
         additionalLink: additionalLink || null,
         bio: bio || null,
-
-       
         comanyAddress: comanyAddress || null,
         emergencyEmail: emergencyEmail || null,
         emergencyName: emergencyName || null,
@@ -173,16 +171,22 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         gallery: galleryArray,
         instagramPost: instagramPostArray,
         instagramReel: instagramReelArray,
-       
         services: serviceObject,
         SocialMediaLink: socialMediaLinkObject,
         testimonials: testimonialObject,
         businessHours:businessLinkObject,
         user: {
-          connect: { id: userId }, // Connect the existing user by ID
+          connect: { id: userId },
         },
       },
+      include: {
+        services: true,
+        socialMediaLink: true,
+        testimonials: true,
+        businessHours: true,
+      },
     });
+
 
     res.status(201).json({ success: true, card: newCard });
   } catch (error: any) {
