@@ -146,7 +146,7 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         qrCodeUrl: qrcodeurl || null,
         aboutUs: aboutUs || null,
         gridType: gridType || null,
-        companySocialMediaLink: companySocialMediaLink || null,
+        companySocialMediaLink: companySocialMediaLinkObject || null,
         dateOfBirth: dateOfBirth || null,
         emails: emails || null,
         phoneNumbers: phoneNumbers || null,
