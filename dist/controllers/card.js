@@ -12,7 +12,7 @@ export const createCard = async (req, res) => {
     try {
         const userId = req.user.id;
         console.log(userId);
-        const { title, jobTitle, companyName, location, templateType, cardName, qrCodeUrl, aboutUs, companySocialMediaLink, dateOfBirth, emails, phoneNumbers, youtubeVideoLink, additionalLink, bio, comanyAddress, emergencyEmail, emergencyName, emergencyNumber, emergencyRelationship, linkedinLink, twitterLink, instagramLink, languageSpoken, otherEmails, otherPhoneNumber, phoneNumber, productDesc, facebookLink, gallery, instagramPost, instagramReel, services, socialMediaLink, testimonials, businessHours, } = req.body;
+        const { title, jobTitle, companyName, location, templateType, cardName, qrCodeUrl, aboutUs, companySocialMediaLink, dateOfBirth, emails, phoneNumbers, youtubeVideoLink, additionalLink, bio, comanyAddress, emergencyEmail, emergencyName, emergencyNumber, emergencyRelationship, linkedinLink, twitterLink, instagramLink, languageSpoken, otherEmails, profileImageUrl, otherPhoneNumber, phoneNumber, headerImageUrl, productDesc, facebookLink, gallery, gridType, instagramPost, instagramReel, services, socialMediaLink, testimonials, businessHours, } = req.body;
         // Validate required fields
         if (!title || !jobTitle || !companyName) {
             return res
@@ -71,13 +71,12 @@ export const createCard = async (req, res) => {
         // Generate unique custom ID and URL
         const customId = randomBytes(16).toString("hex");
         const url = `http://localhost:3000/medical/${customId}`;
-        let profileImageUrl = null;
-        if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path, {
-                folder: "profile_images",
-            });
-            profileImageUrl = result.secure_url;
-        }
+        // if (req.file) {
+        //   const result = await cloudinary.uploader.upload(req.file.path, {
+        //     folder: "profile_images",
+        //   });
+        //   profileImageUrl = result.secure_url;
+        // }
         let qrcodeurl = `http://localhost:3000/${customId}/${cardName}`;
         // Create the new card in the database
         const newCard = await prisma.card.create({
@@ -91,10 +90,12 @@ export const createCard = async (req, res) => {
                 cardName: cardName || url,
                 qrCodeUrl: qrcodeurl || null,
                 aboutUs: aboutUs || null,
+                gridType: gridType || null,
                 companySocialMediaLink: companySocialMediaLinkObject || null,
                 dateOfBirth: dateOfBirth || null,
                 emails: emails || null,
                 phoneNumbers: phoneNumbers || null,
+                headerImageUrl: headerImageUrl || null,
                 youtubeVideoLink: youtubeVideoLink || null,
                 additionalLink: additionalLink || null,
                 bio: bio || null,
@@ -120,11 +121,18 @@ export const createCard = async (req, res) => {
                 testimonials: testimonialObject,
                 businessHours: businessLinkObject,
                 user: {
-                    connect: { id: userId }, // Connect the existing user by ID
+                    connect: { id: userId },
                 },
-            },
+            }
         });
-        res.status(201).json({ success: true, card: newCard });
+        res.status(201).json({ success: true, card: {
+                ...newCard,
+                services,
+                socialMediaLink,
+                testimonials,
+                businessHours,
+                companySocialMediaLink
+            }, });
     }
     catch (error) {
         console.error(error);

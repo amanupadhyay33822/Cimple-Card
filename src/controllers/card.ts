@@ -146,7 +146,7 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         qrCodeUrl: qrcodeurl || null,
         aboutUs: aboutUs || null,
         gridType: gridType || null,
-        companySocialMediaLink: companySocialMediaLink || null,
+        companySocialMediaLink: companySocialMediaLinkObject || null,
         dateOfBirth: dateOfBirth || null,
         emails: emails || null,
         phoneNumbers: phoneNumbers || null,
@@ -178,17 +178,18 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         user: {
           connect: { id: userId },
         },
-      },
-      include: {
-        services: true,
-        socialMediaLink: true,
-        testimonials: true,
-        businessHours: true,
-      },
+      }
     });
 
 
-    res.status(201).json({ success: true, card: newCard });
+    res.status(201).json({ success: true, card: {
+      ...newCard,
+      services,
+      socialMediaLink,
+      testimonials,
+      businessHours,
+      companySocialMediaLink
+    }, });
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
