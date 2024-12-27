@@ -46,6 +46,7 @@ export const createCard: any = async (req: Request, res: Response) => {
       instagramLink,
       languageSpoken,
       otherEmails,
+      profileImageUrl,
       otherPhoneNumber,
       phoneNumber,
       productDesc,
@@ -122,13 +123,13 @@ export const createCard: any = async (req: Request, res: Response) => {
     // Generate unique custom ID and URL
     const customId: string = randomBytes(16).toString("hex");
     const url = `http://localhost:3000/medical/${customId}`;
-    let profileImageUrl = null;
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "profile_images",
-      });
-      profileImageUrl = result.secure_url;
-    }
+    
+    // if (req.file) {
+    //   const result = await cloudinary.uploader.upload(req.file.path, {
+    //     folder: "profile_images",
+    //   });
+    //   profileImageUrl = result.secure_url;
+    // }
 let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
     // Create the new card in the database
     const newCard = await prisma.card.create({
