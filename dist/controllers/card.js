@@ -177,7 +177,7 @@ export const getCardById = async (req, res) => {
 };
 export const getCardDetails = async (req, res) => {
     try {
-        const { id, name } = req.params;
+        const { id, name } = req.query;
         // Validate that at least one parameter is provided
         if (!id && !name) {
             return res.status(400).json({
@@ -185,9 +185,12 @@ export const getCardDetails = async (req, res) => {
                 message: "Please provide either 'id' or 'name' to fetch card details",
             });
         }
+        console.log(name);
         // Fetch card using either id or name
         const card = await prisma.card.findFirst({
-            where: name ? { id: id } : { cardName: name },
+            where: id
+                ? { id: id } // Cast to string if necessary
+                : { cardName: { equals: name, mode: "insensitive" } }, // Case-insensitive search
         });
         if (!card) {
             return res.status(404).json({

@@ -24,7 +24,7 @@ router.get("/get", verifyToken,getAllCards);
 router.get("/get/:id", getCardById);
 
 router.get("/get/service/:cardId",getServicesByCardId)
-router.get("/getby/:id?/:name?", getCardDetails);
+router.get("/getby", getCardDetails);
 // Update a card by ID
 router.put("/update/:id",  verifyToken,updateCard);
 
