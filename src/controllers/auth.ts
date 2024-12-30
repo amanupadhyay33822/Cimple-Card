@@ -222,7 +222,8 @@ export const getUserDetails: any = async (req: Request, res: Response) => {
     const userDetails = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        cards: true, // Include the cards related to the user
+        cards: true,
+        Appointment:true, // Include the cards related to the user
       },
     });
 

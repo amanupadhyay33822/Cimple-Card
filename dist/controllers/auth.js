@@ -193,7 +193,8 @@ export const getUserDetails = async (req, res) => {
         const userDetails = await prisma.user.findUnique({
             where: { id: userId },
             include: {
-                cards: true, // Include the cards related to the user
+                cards: true,
+                Appointment: true, // Include the cards related to the user
             },
         });
         if (!userDetails) {
