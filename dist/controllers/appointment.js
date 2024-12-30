@@ -38,28 +38,56 @@ const prisma = new PrismaClient();
 // Controller for creating an appointment
 export const createAppointment = async (req, res) => {
     try {
-        const { name, phoneNumber, email, message } = req.body;
-        // Create a new appointment in the database
-        const newAppointment = await prisma.appointment.create({
+        const { name, phoneNumber, email, message, timing, publicId, cardId } = req.body;
+        // Validate the required fields
+        if (!name || !phoneNumber || !email || !message || !publicId || !cardId) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields (name, phoneNumber, email, message, publicId, cardId) are required.",
+            });
+        }
+        // Ensure the user and card exist
+        const user = await prisma.user.findUnique({
+            where: { publicId },
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+        const card = await prisma.card.findUnique({ where: { id: cardId } });
+        if (!card) {
+            return res.status(404).json({
+                success: false,
+                message: "Card not found.",
+            });
+        }
+        // Create the appointment
+        const appointment = await prisma.appointment.create({
             data: {
                 name,
                 phoneNumber,
                 email,
                 message,
-                userId: 1,
+                timing: timing ? new Date(timing) : undefined, // Use provided timing or default to now
+                userId: user.id,
+                cardId,
             },
         });
-        // Send confirmation email
-        await sendEmail(newAppointment);
+        await sendEmail(appointment);
         return res.status(201).json({
             success: true,
-            message: "Appointment created successfully!",
-            appointment: newAppointment,
+            message: "Appointment created successfully.",
+            appointment,
         });
     }
     catch (error) {
-        console.error("Error creating appointment:", error);
-        return res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while creating the appointment.",
+            error: error.message,
+        });
     }
 };
 // Controller for retrieving all appointments

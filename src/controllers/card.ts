@@ -204,6 +204,13 @@ export const getAllCards: any = async (req: Request, res: Response) => {
       where: {
         userId: userId,
       },
+      include:{
+        services:true,
+        testimonials:true,
+        companySocialMediaLink:true,
+        SocialMediaLink:true,
+        businessHours:true,
+      }
     });
     res.status(200).json({ success: true, cards });
   } catch (error: any) {
