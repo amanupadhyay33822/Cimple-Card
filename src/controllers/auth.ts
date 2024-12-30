@@ -97,7 +97,7 @@ export const verifyOTP: any = async (req: Request, res: Response) => {
     // Create the new user in the database
     const newUser = await prisma.user.create({
       data: {
-        id: (hashedId), // Assign the hashed value to the id field
+        publicId: (hashedId), // Assign the hashed value to the id field
         email,
         username: username || null, // Username is optional
         password: hashedPassword,
@@ -108,7 +108,7 @@ const title ="Cimple card";
     return res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: newUser.id,
+        id: newUser.publicId,
         email: newUser.email,
         username: newUser.username,
       },
@@ -165,7 +165,7 @@ export const login: any = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Login successful",
       user: {
-        id: user.id,
+        id: user.publicId,
         token: token,
         email: user.email,
 

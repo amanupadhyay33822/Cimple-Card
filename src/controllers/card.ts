@@ -41,17 +41,12 @@ export const createCard: any = async (req: Request, res: Response) => {
       emergencyName,
       emergencyNumber,
       emergencyRelationship,
-      linkedinLink,
-      twitterLink,
-      instagramLink,
       languageSpoken,
-      otherEmails,
+     
       profileImageUrl,
-      otherPhoneNumber,
-      phoneNumber,
+     
       headerImageUrl,
-      productDesc,
-      facebookLink,
+     
       gallery,
       gridType,
       instagramPost,
@@ -71,6 +66,9 @@ export const createCard: any = async (req: Request, res: Response) => {
           error: "Title, jobTitle, and companyName are required.",
         });
     }
+    const user = await prisma.user.findUnique({
+      where: { id:userId },
+    });
 
     // Parse arrays if provided as strings
     const galleryArray = Array.isArray(gallery)
@@ -132,7 +130,7 @@ export const createCard: any = async (req: Request, res: Response) => {
     //   });
     //   profileImageUrl = result.secure_url;
     // }
-let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
+let qrcodeurl =`http://localhost:3000/${user?.publicId}/${cardName}`;
     // Create the new card in the database
     const newCard = await prisma.card.create({
       data: {
@@ -159,15 +157,9 @@ let qrcodeurl =`http://localhost:3000/${customId}/${cardName}`;
         emergencyName: emergencyName || null,
         emergencyNumber: emergencyNumber || null,
         emergencyRelationship: emergencyRelationship || null,
-        linkedinLink: linkedinLink || null,
-        twitterLink: twitterLink || null,
-        instagramLink: instagramLink || null,
+       
         languageSpoken: languageSpoken || null,
-        otherEmails: otherEmails || null,
-        otherPhoneNumber: otherPhoneNumber || null,
-        phoneNumber: phoneNumber || null,
-        productDesc: productDesc || null,
-        facebookLink: facebookLink || null,
+        
         gallery: galleryArray,
         instagramPost: instagramPostArray,
         instagramReel: instagramReelArray,
@@ -238,21 +230,46 @@ export const getCardById: any = async (req: Request, res: Response) => {
 };
 export const getCardDetails: any = async (req: Request, res: Response) => {
   try {
-    const { id, name } = req.query;
+    const { publicId, name } = req.query;
 
     // Validate that at least one parameter is provided
-    if (!id && !name) {
+    if (!publicId && !name) {
       return res.status(400).json({
         success: false,
-        message: "Please provide either 'id' or 'name' to fetch card details",
+        message: "Please provide either 'publicId' or 'name' to fetch card details",
       });
     }
-console.log(name)
-    // Fetch card using either id or name
+
+    // Validate the publicId
+    if (publicId && typeof publicId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid 'publicId'. It should be a string.",
+      });
+    }
+
+    // Fetch the user using publicId
+    const user = publicId
+      ? await prisma.user.findUnique({
+          where: { publicId: publicId as string },
+        })
+      : null;
+
+    if (publicId && !user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Fetch card using name and user's ID
     const card = await prisma.card.findFirst({
-      where: id
-        ? { id: id as string } // Cast to string if necessary
-        : { cardName: { equals: name as string, mode: "insensitive" } }, // Case-insensitive search
+      where: {
+        AND: [
+          name ? { cardName: { equals: name as string, mode: "insensitive" } } : {},
+          publicId ? { userId: user?.id } : {},
+        ],
+      },
     });
 
     if (!card) {
@@ -267,6 +284,7 @@ console.log(name)
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 // Update a card
 export const getServicesByCardId: any = async (req: Request, res: Response) => {

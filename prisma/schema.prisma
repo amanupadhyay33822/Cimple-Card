@@ -15,6 +15,7 @@ model User {
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
   profilePictureUrl    String?
+  publicId  String? @unique
   username             String
   resetPasswordExpires DateTime?
   resetToken           String?       @unique
@@ -54,15 +55,7 @@ model Card {
   emergencyName          String?
   emergencyNumber        String?
   emergencyRelationship  String?
-  linkedinLink           String?
-  twitterLink            String?
-  instagramLink          String?
   languageSpoken         String?
-  otherEmails            String?
-  otherPhoneNumber       String?
-  phoneNumber            String?
-  productDesc            String?
-  facebookLink           String?
   gallery                String[]
   instagramPost          String[]
   instagramReel          String[]
