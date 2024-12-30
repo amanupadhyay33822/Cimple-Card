@@ -17,7 +17,6 @@ cloudinary.config({
 export const createCard: any = async (req: Request, res: Response) => {
   try {
     const userId = req.user.id;
-    console.log(userId);
     const {
       title,
       jobTitle,
@@ -56,6 +55,7 @@ export const createCard: any = async (req: Request, res: Response) => {
       testimonials,
       businessHours,
     } = req.body;
+    console.log(req.body);
 
     // Validate required fields
     if (!title || !jobTitle || !companyName) {
