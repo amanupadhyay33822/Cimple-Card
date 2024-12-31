@@ -11,7 +11,7 @@ cloudinary.config({
 export const createCard = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { title, jobTitle, companyName, location, templateType, cardName, qrCodeUrl, aboutUs, companySocialMediaLink, dateOfBirth, emails, phoneNumbers, youtubeVideoLink, additionalLink, bio, comanyAddress, emergencyEmail, emergencyName, emergencyNumber, emergencyRelationship, languageSpoken, profileImageUrl, headerImageUrl, gallery, gridType, instagramPost, instagramReel, services, socialMediaLink, testimonials, businessHours, } = req.body;
+        const { title, jobTitle, companyName, location, templateType, cardName, qrCodeUrl, aboutUs, companySocialMediaLink, dateOfBirth, emails, phoneNumbers, youtubeVideoLink, additionalLink, bio, companyAddress, emergencyEmail, emergencyName, emergencyNumber, emergencyRelationship, languageSpoken, profileImageUrl, headerImageUrl, gallery, gridType, instagramPost, instagramReel, services, socialMediaLink, testimonials, businessHours, } = req.body;
         console.log(req.body);
         // Validate required fields
         if (!title || !jobTitle || !companyName) {
@@ -64,7 +64,7 @@ export const createCard = async (req, res) => {
                 youtubeVideoLink: youtubeVideoLink || [],
                 additionalLink: additionalLink || null,
                 bio: bio || null,
-                comanyAddress: comanyAddress || null,
+                companyAddress: companyAddress || null,
                 emergencyEmail: emergencyEmail || null,
                 emergencyName: emergencyName || null,
                 emergencyNumber: emergencyNumber || null,
@@ -122,6 +122,7 @@ export const createCard = async (req, res) => {
                 businessHours: true,
             },
         });
+        console.log(newCard);
         res.status(201).json({
             success: true,
             card: newCard,

@@ -78,10 +78,10 @@ export const verifyOTP = async (req, res) => {
         // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10);
         const hashedId = crypto.createHash("sha256").update(email).digest("hex");
-        console.log(hashedId);
-        // Generate referral code based on the user email/ID
-        const ReferralCode = generateReferralCode(hashedId);
-        console.log(ReferralCode);
+        //   console.log(hashedId);
+        //     // Generate referral code based on the user email/ID
+        //     const ReferralCode = generateReferralCode(hashedId); 
+        // console.log(ReferralCode)
         // Create the new user in the database
         const newUser = await prisma.user.create({
             data: {
@@ -89,7 +89,7 @@ export const verifyOTP = async (req, res) => {
                 email,
                 username: username || null, // Username is optional
                 password: hashedPassword,
-                referralCode: ReferralCode, // Store generated referral code
+                // referralCode:ReferralCode, // Store generated referral code
             },
         });
         // Handle referral system if a referral code is provided
@@ -113,7 +113,7 @@ export const verifyOTP = async (req, res) => {
                 id: newUser.publicId,
                 email: newUser.email,
                 username: newUser.username,
-                referralCode: newUser.referralCode, // Return the generated referral code to the user
+                referralCode: "hello", // Return the generated referral code to the user
             },
         });
     }

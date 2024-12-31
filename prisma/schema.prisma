@@ -35,6 +35,7 @@ model Card {
   title                  String
   jobTitle               String?
   companyName            String?
+  companyAddress String?
   profileImageUrl        String?
   templateType           String
   qrCodeUrl              String?
@@ -60,7 +61,6 @@ model Card {
   emails                 String[]
   phoneNumbers           String[]
   youtubeVideoLink       String[]
-  companyAddress         String?
   user                   User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   services               Service[]
   SocialMediaLink        SocialMediaLink[]
