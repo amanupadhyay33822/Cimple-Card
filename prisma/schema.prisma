@@ -55,7 +55,7 @@ model Card {
   instagramReel          String[]
   location               String?
   cardName               String                   @unique
-  comanyAddress          String?
+  companyAddress          String?
   gridType               String?
   headerImageUrl         String?
   emails                 String[]
