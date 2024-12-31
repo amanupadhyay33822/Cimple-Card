@@ -96,7 +96,7 @@ export const createCard = async (req, res) => {
                         name: testimonial.name,
                         imageUrl: testimonial.imageUrl || null,
                         description: testimonial.description,
-                        desgination: testimonial.desgination || null,
+                        designation: testimonial.designation || null,
                     })),
                 },
                 businessHours: {

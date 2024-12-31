@@ -140,7 +140,7 @@ export const createCard: any = async (req: Request, res: Response) => {
             name: testimonial.name,
             imageUrl: testimonial.imageUrl || null,
             description: testimonial.description,
-            desgination: testimonial.desgination || null,
+            designation: testimonial.designation || null,
           })),
         },
         businessHours: {

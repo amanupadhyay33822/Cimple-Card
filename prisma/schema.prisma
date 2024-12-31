@@ -81,7 +81,7 @@ model Testimonial {
   name        String
   imageUrl    String?
   description String
-  desgination String
+  designation String
   createdAt   DateTime @default(now())
   cardId      String
   card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
