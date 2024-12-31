@@ -133,7 +133,7 @@ export const verifyOTP: any = async (req: Request, res: Response) => {
         id: newUser.publicId,
         email: newUser.email,
         username: newUser.username,
-        referralCode: newUser.referralCode, // Return the generated referral code to the user
+        referralCode: "hello", // Return the generated referral code to the user
       },
     });
   } catch (error: any) {
