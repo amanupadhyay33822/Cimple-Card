@@ -166,7 +166,7 @@ export const createCard: any = async (req: Request, res: Response) => {
         businessHours: true,
       },
     });
-
+ console.log(newCard)
     res.status(201).json({
       success: true,
       card: newCard,
