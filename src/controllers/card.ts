@@ -172,7 +172,7 @@ export const createCard: any = async (req: Request, res: Response) => {
       card: newCard,
     });
   } catch (error: any) {
-    console.error(error);
+  
     res.status(500).json({ success: false, error: error.message });
   }
 };
