@@ -11,7 +11,7 @@ export const verifyToken: any = async (
 ) => {
   try {
    
-    console.log(req.cookies.token)
+  
     // console.log(req.headers.authorization)
     // Extracting the token from various sources
     const token =req.body.token||

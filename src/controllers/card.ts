@@ -34,18 +34,17 @@ export const createCard: any = async (req: Request, res: Response) => {
       additionalLink,
       bio,
 
-      
       comanyAddress,
       emergencyEmail,
       emergencyName,
       emergencyNumber,
       emergencyRelationship,
       languageSpoken,
-     
+
       profileImageUrl,
-     
+
       headerImageUrl,
-     
+
       gallery,
       gridType,
       instagramPost,
@@ -59,15 +58,13 @@ export const createCard: any = async (req: Request, res: Response) => {
 
     // Validate required fields
     if (!title || !jobTitle || !companyName) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: "Title, jobTitle, and companyName are required.",
-        });
+      return res.status(400).json({
+        success: false,
+        error: "Title, jobTitle, and companyName are required.",
+      });
     }
     const user = await prisma.user.findUnique({
-      where: { id:userId },
+      where: { id: userId },
     });
 
     // Parse arrays if provided as strings
@@ -123,14 +120,14 @@ export const createCard: any = async (req: Request, res: Response) => {
     // Generate unique custom ID and URL
     const customId: string = randomBytes(16).toString("hex");
     const url = `http://localhost:3000/medical/${customId}`;
-    
+
     // if (req.file) {
     //   const result = await cloudinary.uploader.upload(req.file.path, {
     //     folder: "profile_images",
     //   });
     //   profileImageUrl = result.secure_url;
     // }
-let qrcodeurl =`http://localhost:3000/${user?.publicId}/${cardName}`;
+    let qrcodeurl = `http://localhost:3000/${user?.publicId}/${cardName}`;
     // Create the new card in the database
     const newCard = await prisma.card.create({
       data: {
@@ -157,31 +154,33 @@ let qrcodeurl =`http://localhost:3000/${user?.publicId}/${cardName}`;
         emergencyName: emergencyName || null,
         emergencyNumber: emergencyNumber || null,
         emergencyRelationship: emergencyRelationship || null,
-       
+
         languageSpoken: languageSpoken || null,
-        
+
         gallery: galleryArray,
         instagramPost: instagramPostArray,
         instagramReel: instagramReelArray,
         services: serviceObject,
         SocialMediaLink: socialMediaLinkObject,
         testimonials: testimonialObject,
-        businessHours:businessLinkObject,
+        businessHours: businessLinkObject,
         user: {
           connect: { id: userId },
         },
-      }
+      },
     });
 
-
-    res.status(201).json({ success: true, card: {
-      ...newCard,
-      services,
-      socialMediaLink,
-      testimonials,
-      businessHours,
-      companySocialMediaLink
-    }, });
+    res.status(201).json({
+      success: true,
+      card: {
+        ...newCard,
+        services,
+        socialMediaLink,
+        testimonials,
+        businessHours,
+        companySocialMediaLink,
+      },
+    });
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
@@ -204,13 +203,13 @@ export const getAllCards: any = async (req: Request, res: Response) => {
       where: {
         userId: userId,
       },
-      include:{
-        services:true,
-        testimonials:true,
-        companySocialMediaLink:true,
-        SocialMediaLink:true,
-        businessHours:true,
-      }
+      include: {
+        services: true,
+        testimonials: true,
+        companySocialMediaLink: true,
+        SocialMediaLink: true,
+        businessHours: true,
+      },
     });
     res.status(200).json({ success: true, cards });
   } catch (error: any) {
@@ -223,7 +222,16 @@ export const getCardById: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const card = await prisma.card.findUnique({ where: { id: id } });
+    const card = await prisma.card.findUnique({
+      where: { id: id },
+      include: {
+        services: true,
+        testimonials: true,
+        companySocialMediaLink: true,
+        SocialMediaLink: true,
+        businessHours: true,
+      },
+    });
 
     if (!card)
       return res
@@ -243,7 +251,8 @@ export const getCardDetails: any = async (req: Request, res: Response) => {
     if (!publicId && !name) {
       return res.status(400).json({
         success: false,
-        message: "Please provide either 'publicId' or 'name' to fetch card details",
+        message:
+          "Please provide either 'publicId' or 'name' to fetch card details",
       });
     }
 
@@ -273,7 +282,9 @@ export const getCardDetails: any = async (req: Request, res: Response) => {
     const card = await prisma.card.findFirst({
       where: {
         AND: [
-          name ? { cardName: { equals: name as string, mode: "insensitive" } } : {},
+          name
+            ? { cardName: { equals: name as string, mode: "insensitive" } }
+            : {},
           publicId ? { userId: user?.id } : {},
         ],
       },
@@ -291,7 +302,6 @@ export const getCardDetails: any = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 // Update a card
 export const getServicesByCardId: any = async (req: Request, res: Response) => {
@@ -338,12 +348,10 @@ export const updateCard: any = async (req: Request, res: Response) => {
     }
 
     if (card.userId !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Forbidden: You cannot update this card",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You cannot update this card",
+      });
     }
 
     // Extract fields from the request body
@@ -435,12 +443,10 @@ export const deleteCard: any = async (req: Request, res: Response) => {
 
     // Check if the logged-in user is the owner of the card
     if (card.userId !== userId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "You are not authorized to delete this card",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this card",
+      });
     }
 
     // Delete the card

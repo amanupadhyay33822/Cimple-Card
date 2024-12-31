@@ -4,7 +4,6 @@ import prisma from "../DB/dbconfig.js";
 dotenv.config();
 export const verifyToken = async (req, res, next) => {
     try {
-        console.log(req.cookies.token);
         // console.log(req.headers.authorization)
         // Extracting the token from various sources
         const token = req.body.token ||

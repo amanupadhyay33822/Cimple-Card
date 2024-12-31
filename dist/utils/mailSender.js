@@ -33,7 +33,7 @@ export const sendEmail = async (appointmentDetails) => {
         // Send email using the configured transporter
         const info = await transporter.sendMail(mailOptions);
         // Log the response if successful
-        console.log("Email sent successfully:", info.response);
+        console.log("Email sent successfully:");
         // Return success status
         return {
             success: true,
@@ -57,7 +57,6 @@ export const sendOtpEmail = async (email, otp) => {
         let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
         // Replace placeholders in the HTML with dynamic values
         htmlTemplate = htmlTemplate.replace("{{OTP}}", otp);
-        console.log("Customized HTML:", htmlTemplate);
         const mailOptions = {
             from: "your-email@example.com", // Replace with your email
             to: email,
@@ -67,7 +66,7 @@ export const sendOtpEmail = async (email, otp) => {
         // Send email using the configured transporter
         const info = await transporter.sendMail(mailOptions);
         // Log the response if successful
-        console.log("Email sent successfully:", info.response);
+        console.log("Email sent successfully:");
         // Return success status
         return {
             success: true,
@@ -102,7 +101,6 @@ export const mailSender = async (email, title, name) => {
             subject: `${title}`,
             html: htmlTemplate,
         });
-        console.log(info);
         return info;
     }
     catch (error) {

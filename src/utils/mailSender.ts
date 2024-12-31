@@ -41,7 +41,7 @@ const transporter = nodemailer.createTransport({
       const info = await transporter.sendMail(mailOptions);
   
       // Log the response if successful
-      console.log("Email sent successfully:", info.response);
+      console.log("Email sent successfully:");
   
       // Return success status
       return {
@@ -68,7 +68,7 @@ const transporter = nodemailer.createTransport({
   
       // Replace placeholders in the HTML with dynamic values
       htmlTemplate = htmlTemplate.replace("{{OTP}}", otp);
-      console.log("Customized HTML:", htmlTemplate);
+    
 
       const mailOptions = {
         from: "your-email@example.com", // Replace with your email
@@ -81,7 +81,7 @@ const transporter = nodemailer.createTransport({
       const info = await transporter.sendMail(mailOptions);
   
       // Log the response if successful
-      console.log("Email sent successfully:", info.response);
+      console.log("Email sent successfully:");
   
       // Return success status
       return {
@@ -120,7 +120,7 @@ const templatePath = path.join(__dirname, "signup_template.html");
                 subject: `${title}`,
                 html:htmlTemplate,
             })
-            console.log(info);
+            
             return info;
     }
     catch(error:any) {

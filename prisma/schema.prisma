@@ -23,6 +23,8 @@ model User {
   bio                  String?
   contactNumber        String?
   designation          String?
+  referralCode         String?       @unique
+  referralCount        Int           @default(0)
   Appointment          Appointment[]
   
   cards                Card[]
