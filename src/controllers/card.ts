@@ -33,18 +33,14 @@ export const createCard: any = async (req: Request, res: Response) => {
       youtubeVideoLink,
       additionalLink,
       bio,
-
       comanyAddress,
       emergencyEmail,
       emergencyName,
       emergencyNumber,
       emergencyRelationship,
       languageSpoken,
-
       profileImageUrl,
-
       headerImageUrl,
-
       gallery,
       gridType,
       instagramPost,
@@ -54,6 +50,7 @@ export const createCard: any = async (req: Request, res: Response) => {
       testimonials,
       businessHours,
     } = req.body;
+
     console.log(req.body);
 
     // Validate required fields
@@ -63,9 +60,17 @@ export const createCard: any = async (req: Request, res: Response) => {
         error: "Title, jobTitle, and companyName are required.",
       });
     }
+
+    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found.",
+      });
+    }
 
     // Parse arrays if provided as strings
     const galleryArray = Array.isArray(gallery)
@@ -78,57 +83,12 @@ export const createCard: any = async (req: Request, res: Response) => {
       ? instagramReel
       : JSON.parse(instagramReel || "[]");
 
-    // Handle optional fields
-    const serviceObject = services
-      ? {
-          name: services.name,
-          imageUrl: services.imageUrl,
-          serviceUrl: services.serviceUrl,
-        }
-      : null;
-
-    const socialMediaLinkObject = socialMediaLink
-      ? {
-          platform: socialMediaLink.platform,
-          url: socialMediaLink.url,
-          iconUrl: socialMediaLink.iconUrl,
-        }
-      : null;
-    const businessLinkObject = businessHours
-      ? {
-          type: businessHours.type,
-          from: businessHours.from,
-          to: businessHours.to,
-        }
-      : null;
-    const companySocialMediaLinkObject = companySocialMediaLink
-      ? {
-          platform: companySocialMediaLink.platform,
-          url: companySocialMediaLink.url,
-          iconUrl: companySocialMediaLink.iconUrl,
-        }
-      : null;
-
-    const testimonialObject = testimonials
-      ? {
-          name: testimonials.name,
-          imageUrl: testimonials.imageUrl,
-          description: testimonials.description,
-        }
-      : null;
-
     // Generate unique custom ID and URL
     const customId: string = randomBytes(16).toString("hex");
     const url = `http://localhost:3000/medical/${customId}`;
+    const qrcodeurl = `http://localhost:3000/${user?.publicId}/${cardName}`;
 
-    // if (req.file) {
-    //   const result = await cloudinary.uploader.upload(req.file.path, {
-    //     folder: "profile_images",
-    //   });
-    //   profileImageUrl = result.secure_url;
-    // }
-    let qrcodeurl = `http://localhost:3000/${user?.publicId}/${cardName}`;
-    // Create the new card in the database
+    // Create the new card along with connected data
     const newCard = await prisma.card.create({
       data: {
         title,
@@ -141,12 +101,11 @@ export const createCard: any = async (req: Request, res: Response) => {
         qrCodeUrl: qrcodeurl || null,
         aboutUs: aboutUs || null,
         gridType: gridType || null,
-        companySocialMediaLink: companySocialMediaLinkObject || null,
         dateOfBirth: dateOfBirth || null,
-        emails: emails || null,
-        phoneNumbers: phoneNumbers || null,
+        emails: emails || [],
+        phoneNumbers: phoneNumbers || [],
         headerImageUrl: headerImageUrl || null,
-        youtubeVideoLink: youtubeVideoLink || null,
+        youtubeVideoLink: youtubeVideoLink || [],
         additionalLink: additionalLink || null,
         bio: bio || null,
         comanyAddress: comanyAddress || null,
@@ -154,32 +113,63 @@ export const createCard: any = async (req: Request, res: Response) => {
         emergencyName: emergencyName || null,
         emergencyNumber: emergencyNumber || null,
         emergencyRelationship: emergencyRelationship || null,
-
         languageSpoken: languageSpoken || null,
-
         gallery: galleryArray,
         instagramPost: instagramPostArray,
         instagramReel: instagramReelArray,
-        services: serviceObject,
-        SocialMediaLink: socialMediaLinkObject,
-        testimonials: testimonialObject,
-        businessHours: businessLinkObject,
         user: {
           connect: { id: userId },
         },
+        services: {
+          create: services.map((service: any) => ({
+            name: service.name,
+            imageUrl: service.imageUrl || null,
+            serviceUrl: service.serviceUrl || null,
+            description: service.description || null,
+          })),
+        },
+        SocialMediaLink: {
+          create: socialMediaLink.map((link: any) => ({
+            platform: link.platform,
+            url: link.url,
+            iconUrl: link.iconUrl || null,
+          })),
+        },
+        testimonials: {
+          create: testimonials.map((testimonial: any) => ({
+            name: testimonial.name,
+            imageUrl: testimonial.imageUrl || null,
+            description: testimonial.description,
+            desgination: testimonial.desgination || null,
+          })),
+        },
+        businessHours: {
+          create: businessHours.map((business: any) => ({
+            type: business.type,
+            from: business.from,
+            to: business.to,
+          })),
+        },
+        companySocialMediaLink: {
+          create: companySocialMediaLink.map((link: any) => ({
+            platform: link.platform,
+            url: link.url,
+            iconUrl: link.iconUrl || null,
+          })),
+        },
+      },
+      include: {
+        services: true,
+        SocialMediaLink: true,
+        companySocialMediaLink:true,
+        testimonials: true,
+        businessHours: true,
       },
     });
 
     res.status(201).json({
       success: true,
-      card: {
-        ...newCard,
-        services,
-        socialMediaLink,
-        testimonials,
-        businessHours,
-        companySocialMediaLink,
-      },
+      card: newCard,
     });
   } catch (error: any) {
     console.error(error);
