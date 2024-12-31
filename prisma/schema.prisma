@@ -23,6 +23,7 @@ model User {
   bio                  String?
   contactNumber        String?
   designation          String?
+  paymentPlan          PaymentPlan @default(Basic)
   referralCode         String?       @unique
   referralCount        Int           @default(0)
   Appointment          Appointment[]
@@ -30,6 +31,11 @@ model User {
   cards                Card[]
 }
 
+ enum PaymentPlan {
+  Basic
+  Standard
+  Premium
+ }
 model Card {
   id                     String            @id @default(uuid())
   title                  String
