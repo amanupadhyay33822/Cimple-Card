@@ -55,12 +55,12 @@ model Card {
   instagramReel          String[]
   location               String?
   cardName               String                   @unique
-  companyAddress          String?
   gridType               String?
   headerImageUrl         String?
   emails                 String[]
   phoneNumbers           String[]
   youtubeVideoLink       String[]
+  companyAddress         String?
   user                   User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   services               Service[]
   SocialMediaLink        SocialMediaLink[]
