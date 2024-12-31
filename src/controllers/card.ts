@@ -165,7 +165,7 @@ export const createCard: any = async (req: Request, res: Response) => {
         testimonials: testimonialObject,
         businessHours: businessLinkObject,
         user: {
-          connect: { publicId: userId },
+          connect: { id: userId },
         },
       },
     });
