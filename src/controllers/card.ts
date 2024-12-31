@@ -108,7 +108,7 @@ export const createCard: any = async (req: Request, res: Response) => {
         youtubeVideoLink: youtubeVideoLink || [],
         additionalLink: additionalLink || null,
         bio: bio || null,
-        comanyAddress: comanyAddress || null,
+        companyAddress: comanyAddress || null,
         emergencyEmail: emergencyEmail || null,
         emergencyName: emergencyName || null,
         emergencyNumber: emergencyNumber || null,
