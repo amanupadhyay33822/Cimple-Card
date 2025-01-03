@@ -12,10 +12,11 @@ dotenv.config({});
 const PORT = process.env.PORT || 3000;
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests from localhost and Vercel deployments
+        // Allow requests from localhost, Vercel deployments, and thecimplecard.com
         if (!origin || // Allow non-origin requests (e.g., from Postman)
             origin.startsWith("http://localhost") || // Allow all localhost URLs
-            origin.endsWith(".vercel.app") // Allow all Vercel deployments
+            origin.endsWith(".vercel.app") || // Allow all Vercel deployments
+            origin === "https://thecimplecard.com" // Allow specific URL
         ) {
             callback(null, true);
         }
