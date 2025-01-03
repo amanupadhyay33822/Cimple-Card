@@ -86,7 +86,7 @@ export const createCard: any = async (req: Request, res: Response) => {
     // Generate unique custom ID and URL
     const customId: string = randomBytes(16).toString("hex");
     const url = `http://localhost:3000/medical/${customId}`;
-    const qrcodeurl = `http://localhost:3000/${user?.publicId}/${cardName}`;
+    const qrcodeurl = `https://cimplecard-deploy.vercel.app/${user?.publicId}/${cardName}`;
 
     // Create the new card along with connected data
     const newCard = await prisma.card.create({
@@ -166,7 +166,7 @@ export const createCard: any = async (req: Request, res: Response) => {
         businessHours: true,
       },
     });
- console.log(newCard)
+ 
     res.status(201).json({
       success: true,
       card: newCard,
@@ -320,91 +320,126 @@ export const getServicesByCardId: any = async (req: Request, res: Response) => {
 export const updateCard: any = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id; // Assuming req.user contains the logged-in user's ID
+    const {
+      title,
+      jobTitle,
+      companyName,
+      services,
+      SocialMediaLink,
+      testimonials,
+      businessHours,
+      companySocialMediaLink,
+      ...otherCardDetails
+    } = req.body;
 
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+    const userId = req.user?.id;
 
-    // Check if the card belongs to the logged-in user
-    const card = await prisma.card.findUnique({
-      where: { id: id },
-    });
+    const card = await prisma.card.findUnique({ where: { id } });
 
     if (!card) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Card not found" });
+      return res.status(404).json({ success: false, message: 'Card not found' });
     }
 
     if (card.userId !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: "Forbidden: You cannot update this card",
-      });
+      return res.status(403).json({ success: false, message: 'You are not authorized to update this card' });
     }
 
-    // Extract fields from the request body
-    const {
-      title,
-      bio,
-      phoneNumbers,
-      emails,
-      templateType,
-      qrCodeUrl,
-      aboutUs,
-      instagramVideoLink,
-      youtubeVideoLink,
-      companySocialMediaLink,
-      profileImageUrl,
-      personalSocialMediaLinks,
-      jobTitle,
-      companyName,
-      dateOfBirth,
-      addresses,
-    } = req.body;
-
-    // Create a dynamic data object
-    const updatedData: any = {};
-
-    // Validate and add fields to the updatedData object only if they are provided
-    if (title) updatedData.title = title;
-    if (bio) updatedData.bio = bio;
-    if (phoneNumbers) updatedData.phoneNumbers = phoneNumbers;
-    if (emails) updatedData.emails = emails;
-    if (templateType) updatedData.templateType = templateType;
-    if (qrCodeUrl) updatedData.qrCodeUrl = qrCodeUrl;
-    if (aboutUs) updatedData.aboutUs = aboutUs;
-    if (instagramVideoLink) updatedData.instagramVideoLink = instagramVideoLink;
-    if (youtubeVideoLink) updatedData.youtubeVideoLink = youtubeVideoLink;
-    if (companySocialMediaLink)
-      updatedData.companySocialMediaLink = companySocialMediaLink;
-    if (profileImageUrl) updatedData.profileImageUrl = profileImageUrl;
-    if (personalSocialMediaLinks)
-      updatedData.personalSocialMediaLinks = personalSocialMediaLinks;
-    if (jobTitle) updatedData.jobTitle = jobTitle;
-    if (companyName) updatedData.companyName = companyName;
-
-    // Convert dateOfBirth to a valid Date object if provided
-    if (dateOfBirth) {
-      const parsedDate = new Date(dateOfBirth);
-      if (isNaN(parsedDate.getTime())) {
-        return res
-          .status(400)
-          .json({ success: false, error: "Invalid dateOfBirth format" });
-      }
-      updatedData.dateOfBirth = parsedDate;
-    }
-
-    if (addresses) updatedData.addresses = addresses;
-
-    // Update the card with the dynamic fields
     const updatedCard = await prisma.card.update({
-      where: { id: id },
-      data: updatedData,
+      where: { id },
+      data: {
+        title,
+        jobTitle,
+        companyName,
+        ...otherCardDetails,
+      },
     });
 
-    res.status(200).json({ success: true, card: updatedCard });
+    if (services) {
+      await Promise.all(
+        services.map(async (service: any) => {
+          if (service.id) {
+            await prisma.service.update({
+              where: { id: service.id },
+              data: service,
+            });
+          } else {
+            await prisma.service.create({
+              data: { ...service, cardId: id },
+            });
+          }
+        })
+      );
+    }
+    if (companySocialMediaLink) {
+      await Promise.all(
+        companySocialMediaLink.map(async (link: any) => {
+          if (link.id) {
+            await prisma.companySocialMediaLink.update({
+              where: { id: link.id },
+              data: link,
+            });
+          } else {
+            await prisma.companySocialMediaLink.create({
+              data: { ...link, cardId: id },
+            });
+          }
+        })
+      );
+    }
+    
+    if (SocialMediaLink) {
+      await Promise.all(
+        SocialMediaLink.map(async (link: any) => {
+          if (link.id) {
+            await prisma.socialMediaLink.update({
+              where: { id: link.id },
+              data: link,
+            });
+          } else {
+            await prisma.socialMediaLink.create({
+              data: { ...link, cardId: id },
+            });
+          }
+        })
+      );
+    }
+
+    if (testimonials) {
+      await Promise.all(
+        testimonials.map(async (testimonial: any) => {
+          if (testimonial.id) {
+            await prisma.testimonial.update({
+              where: { id: testimonial.id },
+              data: testimonial,
+            });
+          } else {
+            await prisma.testimonial.create({
+              data: { ...testimonial, cardId: id },
+            });
+          }
+        })
+      );
+    }
+
+    if (businessHours) {
+      await Promise.all(
+        businessHours.map(async (hour: any) => {
+          if (hour.id) {
+            await prisma.business.update({
+              where: { id: hour.id },
+              data: hour,
+            });
+          } else {
+            await prisma.business.create({
+              data: { ...hour, cardId: id },
+            });
+          }
+        })
+      );
+    }
+
+    res.status(200).json({ success: true, data: updatedCard });
+
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

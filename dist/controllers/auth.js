@@ -71,25 +71,19 @@ export const verifyOTP = async (req, res) => {
         if (!storedOTP) {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
-        // Delete the OTP after verification
         await prisma.oTP.delete({
             where: { id: storedOTP.id },
         });
-        // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(password, 10);
         const hashedId = crypto.createHash("sha256").update(email).digest("hex");
-        //   console.log(hashedId);
-        //     // Generate referral code based on the user email/ID
-        //     const ReferralCode = generateReferralCode(hashedId); 
-        // console.log(ReferralCode)
-        // Create the new user in the database
+        const code = generateReferralCode(hashedId);
         const newUser = await prisma.user.create({
             data: {
                 publicId: hashedId, // Assign the hashed value to the id field
                 email,
                 username: username || null, // Username is optional
                 password: hashedPassword,
-                // referralCode:ReferralCode, // Store generated referral code
+                referralCode: code, // Store generated referral code
             },
         });
         // Handle referral system if a referral code is provided
@@ -113,7 +107,7 @@ export const verifyOTP = async (req, res) => {
                 id: newUser.publicId,
                 email: newUser.email,
                 username: newUser.username,
-                referralCode: "hello", // Return the generated referral code to the user
+                referralCode: newUser.referralCode, // Return the generated referral code to the user
             },
         });
     }
@@ -189,19 +183,12 @@ export const refer = (req, res) => {
     try {
         // Clear the JWT token cookie by setting it to an empty value and an immediate expiration time
         const userId = req.user.id;
+        const email = req.body.email;
         // const {email } = req.body;
         // // const hashedPassword = await bcrypt.hash(password, 10);
-        // const hashedId = crypto.createHash("sha256").update(email).digest("hex");
-        const hash = crypto.createHash("md5").update(userId).digest("hex");
-        console.log(hash);
-        const substring = hash.slice(0, 8);
-        console.log(substring); // First 8 characters of the MD5 hash
-        const bitValue = parseInt(substring, 16); // Convert to integer
-        console.log(bitValue);
-        const base36Value = bitValue.toString(36);
-        const referralCode = base36Value.slice(-4).padStart(4, '0');
-        // Send response indicating logout was successful
-        return res.status(200).json({ message: "Logout successful", referralCode });
+        const hashedId = crypto.createHash("sha256").update(email).digest("hex");
+        const x = generateReferralCode(hashedId);
+        return res.status(200).json({ message: "Logout successful", referralCode: x });
     }
     catch (error) {
         console.error("Logout error:", error);
@@ -251,7 +238,7 @@ export const getUserDetails = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
-// Adjust the import based on your setup
+import { generateReferralCode } from "../utils/referralCode.js";
 export const updateUserDetails = async (req, res) => {
     const userId = req.user?.id; // Assume user ID is attached to `req.user` by authentication middleware
     const { email, username, designation, contactNumber, availability, bio, role, } = req.body;
